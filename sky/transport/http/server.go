@@ -103,17 +103,10 @@ func ListenAndServe(ctx context.Context, conf config.HTTP, httpHandler http.Hand
 	log.Info(ctx, "serve exit. ", g.Run())
 }
 
-func errorEncoder(_ context.Context, err error, w http.ResponseWriter) {
-	w.WriteHeader(err2code(err))
+func errorEncoder(ctx context.Context, err error, w http.ResponseWriter) {
+	log.Error(ctx, err)
+	w.WriteHeader(http.StatusInternalServerError)
 	json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
-}
-
-func err2code(err error) int {
-	//switch err {
-	//case service.ErrTwoZeroes, service.ErrMaxSizeExceeded, service.ErrIntOverflow:
-	//	return http.StatusBadRequest
-	//}
-	return http.StatusInternalServerError
 }
 
 type errorWrapper struct {

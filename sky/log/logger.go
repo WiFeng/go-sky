@@ -73,10 +73,14 @@ func SetDefaultLogger(logg Logger) {
 // NewLogger new Logger
 func NewLogger(logConf config.Log) (Logger, error) {
 	zapConf := config.NewZapConfig(logConf)
-	zapLogger, err := zapConf.Build()
+	zapOptions := []zap.Option{
+		zap.AddCallerSkip(1),
+	}
+	zapLogger, err := zapConf.Build(zapOptions...)
 	if err != nil {
 		return nil, err
 	}
+
 	logger := logger{
 		zapLogger.Sugar(),
 	}

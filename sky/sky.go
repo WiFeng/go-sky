@@ -16,6 +16,10 @@ import (
 	skyhttp "github.com/WiFeng/go-sky/sky/transport/http"
 )
 
+var (
+	globalConfig config.Config
+)
+
 func initFlag() (*string, *string, error) {
 	fs := flag.NewFlagSet("short-url", flag.ExitOnError)
 
@@ -45,9 +49,7 @@ func usageFor(fs *flag.FlagSet, short string) func() {
 	}
 }
 
-// Run ...
-func Run(httpHandler http.Handler) {
-
+func init() {
 	// Initialize flogs
 	var err error
 	var configDir *string
@@ -61,13 +63,11 @@ func Run(httpHandler http.Handler) {
 	}
 
 	// Initialize global config
-	var globalConfig config.Config
 	{
 		if err = config.Init(*configDir, *environment, &globalConfig); err != nil {
 			fmt.Println("Init config file error. ", err)
 			os.Exit(1)
 		}
-
 	}
 
 	// Initialzie logger
@@ -77,7 +77,10 @@ func Run(httpHandler http.Handler) {
 			fmt.Println("Init config file error. ", err)
 			os.Exit(1)
 		}
-		defer logger.Sync()
+		_ = logger
+
+		// TODO:
+		// defer logger.Sync()
 	}
 
 	// Initialize global tracer
@@ -91,22 +94,18 @@ func Run(httpHandler http.Handler) {
 		defer tracerCloser.Close()
 	}
 
-	var ctx context.Context
-	{
-		ctx = context.Background()
-	}
-
 	// Initialize pprof
 	{
 		pprofHost := globalConfig.Server.PProf.Host
 		pporfPort := globalConfig.Server.PProf.Port
-		pprof.Init(ctx, pprofHost, pporfPort)
+		pprof.Init(context.Background(), pprofHost, pporfPort)
 	}
+}
 
-	// Start listen and serve
-	{
-		httpConfig := globalConfig.Server.HTTP
-		skyhttp.ListenAndServe(ctx, httpConfig, httpHandler)
-	}
+// Run ...
+func Run(httpHandler http.Handler) {
+
+	httpConfig := globalConfig.Server.HTTP
+	skyhttp.ListenAndServe(context.Background(), httpConfig, httpHandler)
 
 }

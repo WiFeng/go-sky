@@ -1,27 +1,33 @@
 package sky
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
-	"runtime/pprof"
 	"text/tabwriter"
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/sky/pprof"
 	"github.com/WiFeng/go-sky/sky/trace"
-	"github.com/WiFeng/go-sky/sky/transport/http"
+	skyhttp "github.com/WiFeng/go-sky/sky/transport/http"
 )
 
-func initFlag() (configDir *string, environment *string, err error) {
+func initFlag() (*string, *string, error) {
 	fs := flag.NewFlagSet("short-url", flag.ExitOnError)
+
 	var (
 		configDir   = fs.String("conf", "./conf/", "Config Directory")
 		environment = fs.String("env", "development", "Runing environment")
 	)
+
 	fs.Usage = usageFor(fs, os.Args[0]+" [flags]")
-	err = fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+
+	return configDir, environment, err
 }
 
 func usageFor(fs *flag.FlagSet, short string) func() {
@@ -43,18 +49,18 @@ func usageFor(fs *flag.FlagSet, short string) func() {
 func Run(httpHandler http.Handler) {
 
 	// Initialize flogs
+	var err error
 	var configDir *string
 	var environment *string
 	{
-		configDir, environment := initFlag()
-		if environment == nil {
+		configDir, environment, err = initFlag()
+		if err != nil {
 			fmt.Println("Init flag error. ", err)
 			os.Exit(1)
 		}
 	}
 
 	// Initialize global config
-	var err error
 	var globalConfig config.Config
 	{
 		if err = config.Init(*configDir, *environment, &globalConfig); err != nil {
@@ -85,17 +91,22 @@ func Run(httpHandler http.Handler) {
 		defer tracerCloser.Close()
 	}
 
+	var ctx context.Context
+	{
+		ctx = context.Background()
+	}
+
 	// Initialize pprof
 	{
-		pprofHost := globalConfig.Server.PPorf.Host
-		pporfPort := globalConfig.Server.PPorf.Port
-		pprof.Init(pprofHost, pporfPort)
+		pprofHost := globalConfig.Server.PProf.Host
+		pporfPort := globalConfig.Server.PProf.Port
+		pprof.Init(ctx, pprofHost, pporfPort)
 	}
 
 	// Start listen and serve
 	{
 		httpConfig := globalConfig.Server.HTTP
-		http.ListenAndServe(httpConfig, httpHandler)
+		skyhttp.ListenAndServe(ctx, httpConfig, httpHandler)
 	}
 
 }

@@ -5,22 +5,22 @@ import (
 	"io"
 
 	"github.com/opentracing/opentracing-go"
-	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	"github.com/uber/jaeger-lib/metrics/prometheus"
+
+	jaegerclient "github.com/uber/jaeger-client-go"
+	jaegerconfig "github.com/uber/jaeger-client-go/config"
 )
 
 // Init ...
 func Init(serviceName string) (opentracing.Tracer, io.Closer, error) {
 	metricsFactory := prometheus.New()
-	tracer, tracerCloser, err = jaegerconfig.Configuration{
+	tracer, tracerCloser, err := jaegerconfig.Configuration{
 		ServiceName: serviceName,
 	}.NewTracer(
 		jaegerconfig.Metrics(metricsFactory),
 	)
-
-	defer opentracing.InitGlobalTracer(tracer)
-
-	return tracer, tracerCloser, nil
+	opentracing.InitGlobalTracer(tracer)
+	return tracer, tracerCloser, err
 }
 
 // GetTraceID Get trace id from the context.

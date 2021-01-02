@@ -18,7 +18,7 @@ type Server struct {
 	Name  string
 	HTTP  HTTP
 	PProf PProf
-	Log   zapLog
+	Log   Log
 }
 
 // HTTP http config
@@ -31,8 +31,6 @@ type PProf struct {
 	Host string
 	Port int
 }
-
-type Log zapLog
 
 // Redis redis config
 type Redis struct {
@@ -55,10 +53,12 @@ type Mysql struct {
 }
 
 // Init ...
-func Init(dir, env string, conf Config) error {
-	if _, err := LoadConfig(dir, "config", env, conf); err != nil {
+func Init(dir, env string, conf *Config) error {
+	if err := LoadConfig(dir, "config", env, conf); err != nil {
 		return err
 	}
+
+	return nil
 }
 
 // DecodeFile decode toml file
@@ -68,12 +68,15 @@ func DecodeFile(fpath string, v interface{}) (toml.MetaData, error) {
 
 // LoadConfig ...
 func LoadConfig(dir string, name string, env string, conf interface{}) error {
-	var confFile = sprintf("%s/%s.toml", path, name)
+	var confFile = fmt.Sprintf("%s/%s.toml", dir, name)
 
 	if env != "" {
-		confFile = fmt.Sprintf("./conf/config_%s.toml", name, env)
+		confFile = fmt.Sprintf("./conf/%s_%s.toml", name, env)
 	}
-	if _, err := DecodeFile(confFile, &conf); err != nil {
+
+	if _, err := DecodeFile(confFile, conf); err != nil {
 		return err
 	}
+
+	return nil
 }

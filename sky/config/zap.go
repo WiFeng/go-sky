@@ -6,7 +6,7 @@ import (
 )
 
 // Log log config
-type zapLog struct {
+type Log struct {
 	Level             zap.AtomicLevel        `toml:"level"`
 	Development       bool                   `toml:"development"`
 	DisableCaller     bool                   `toml:"disable_caller"`
@@ -37,7 +37,7 @@ type zapEncoderConfig struct {
 }
 
 // NewZapConfig new zap config
-func NewZapConfig(zapConf Config.Server.Log) zap.Config {
+func NewZapConfig(zapConf Log) zap.Config {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "time"
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder

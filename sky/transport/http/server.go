@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 	"syscall"
 
 	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/middleware"
 	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/sky/middleware"
 	"github.com/WiFeng/go-sky/sky/trace"
 	"github.com/oklog/oklog/pkg/group"
 
@@ -19,10 +20,12 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
+// Server ...
 type Server struct {
 	*kithttp.Server
 }
 
+// NewServer ...
 func NewServer(
 	e kitendpoint.Endpoint,
 	dec kithttp.DecodeRequestFunc,
@@ -30,6 +33,7 @@ func NewServer(
 	opt ...kithttp.ServerOption,
 ) *Server {
 
+	logger := log.GetDefaultLogger()
 	options := []kithttp.ServerOption{
 		kithttp.ServerErrorEncoder(errorEncoder),
 		kithttp.ServerErrorLogger(logger),
@@ -51,14 +55,14 @@ func NewServer(
 	)
 
 	s := &Server{
-		ks
+		ks,
 	}
 
 	return s
 }
 
 // ListenAndServe ...
-func ListenAndServe(conf config.HTTP, httpHandler http.Handler) {
+func ListenAndServe(ctx context.Context, conf config.HTTP, httpHandler http.Handler) {
 
 	var g group.Group
 	{
@@ -68,11 +72,11 @@ func ListenAndServe(conf config.HTTP, httpHandler http.Handler) {
 		// The HTTP listener mounts the Go kit HTTP handler we created.
 		httpListener, err := net.Listen("tcp", *httpAddr)
 		if err != nil {
-			log.Fatalw("listen error", "transport", "HTTP", "during", "Listen", "err", err)
+			log.Fatalw(ctx, "listen error", "transport", "HTTP", "during", "Listen", "err", err)
 			os.Exit(1)
 		}
 		g.Add(func() error {
-			log.Infow("serve start", "transport", "HTTP", "addr", *httpAddr)
+			log.Infow(ctx, "serve start", "transport", "HTTP", "addr", *httpAddr)
 			return http.Serve(httpListener, httpHandler)
 		}, func(error) {
 			httpListener.Close()
@@ -96,7 +100,24 @@ func ListenAndServe(conf config.HTTP, httpHandler http.Handler) {
 		})
 	}
 
-	log.Info("serve exit. ", g.Run())
+	log.Info(ctx, "serve exit. ", g.Run())
+}
+
+func errorEncoder(_ context.Context, err error, w http.ResponseWriter) {
+	w.WriteHeader(err2code(err))
+	json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
+}
+
+func err2code(err error) int {
+	//switch err {
+	//case service.ErrTwoZeroes, service.ErrMaxSizeExceeded, service.ErrIntOverflow:
+	//	return http.StatusBadRequest
+	//}
+	return http.StatusInternalServerError
+}
+
+type errorWrapper struct {
+	Error string `json:"error"`
 }
 
 func beforeHandler(ctx context.Context, r *http.Request) context.Context {
@@ -110,5 +131,3 @@ func afterHandler(ctx context.Context, w http.ResponseWriter) context.Context {
 	// ctx = syncLogger(ctx)
 	return ctx
 }
-
-

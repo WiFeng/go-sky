@@ -3,8 +3,8 @@ package log
 import (
 	"context"
 
-	"github.com/WiFeng/go-sky/sky"
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/trace"
 	"go.uber.org/zap"
 )
 
@@ -71,8 +71,8 @@ func SetDefaultLogger(logg Logger) {
 }
 
 // NewLogger new Logger
-func NewLogger(conf *config.Config) (Logger, error) {
-	zapConf := config.NewZapConfig(conf)
+func NewLogger(logConf config.Log) (Logger, error) {
+	zapConf := config.NewZapConfig(logConf)
 	zapLogger, err := zapConf.Build()
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (l logger) With(args ...interface{}) Logger {
 func BuildLogger(ctx context.Context) context.Context {
 	newLogg := GetDefaultLogger()
 
-	traceID := sky.GetTraceID(ctx)
+	traceID := trace.GetTraceID(ctx)
 	if traceID != "" {
 		newLogg = newLogg.With(traceIDKey, traceID)
 	} else {

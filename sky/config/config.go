@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -11,6 +12,7 @@ type Config struct {
 	Server Server
 	Redis  []Redis
 	Mysql  []Mysql
+	Client []Client
 }
 
 // Server server config
@@ -30,6 +32,31 @@ type HTTP struct {
 type PProf struct {
 	Host string
 	Port int
+}
+
+// Client ...
+type Client struct {
+	Name     string
+	Host     string
+	Port     int
+	Protocol string
+
+	CustomTranport bool
+	MillSecUnit    bool
+
+	Timeout time.Duration
+
+	IdleConnTimeout       time.Duration
+	TLSHandshakeTimeout   time.Duration
+	ExpectContinueTimeout time.Duration
+	ResponseHeaderTimeout time.Duration
+
+	MaxConnsPerHost     int
+	MaxIdleConns        int
+	MaxIdleConnsPerHost int
+
+	DisableKeepAlives  bool
+	DisableCompression bool
 }
 
 // Redis redis config

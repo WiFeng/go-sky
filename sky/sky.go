@@ -100,6 +100,11 @@ func init() {
 		pporfPort := globalConfig.Server.PProf.Port
 		pprof.Init(context.Background(), pprofHost, pporfPort)
 	}
+
+	// Initialize client
+	{
+		skyhttp.InitClient(context.Background(), globalConfig.Client)
+	}
 }
 
 // Run ...

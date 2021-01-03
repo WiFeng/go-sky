@@ -45,6 +45,7 @@ func NewServer(
 		options = append(options, opt...)
 	}
 
+	e = middleware.PanicMiddleware()(e)
 	e = middleware.LoggingMiddleware()(e)
 
 	ks := kithttp.NewServer(

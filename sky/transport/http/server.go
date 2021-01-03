@@ -13,10 +13,11 @@ import (
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/WiFeng/go-sky/sky/middleware"
-	"github.com/WiFeng/go-sky/sky/trace"
 	"github.com/oklog/oklog/pkg/group"
+	"github.com/opentracing/opentracing-go"
 
 	kitendpoint "github.com/go-kit/kit/endpoint"
+	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
@@ -114,14 +115,35 @@ type errorWrapper struct {
 	Error string `json:"error"`
 }
 
+// StartSpan ...
+func StartSpan(ctx context.Context, r *http.Request) context.Context {
+
+	var logger = log.LoggerFromContext(ctx)
+	var tracer = opentracing.GlobalTracer()
+	var operationName = fmt.Sprintf("[%s]%s", r.Method, r.URL)
+
+	return kitopentracing.HTTPToContext(tracer, operationName, logger)(ctx, r)
+}
+
+// FinishSpan ...
+func FinishSpan(ctx context.Context, w http.ResponseWriter) context.Context {
+	span := opentracing.SpanFromContext(ctx)
+	if span != nil {
+		span.Finish()
+	}
+	return ctx
+}
+
 func beforeHandler(ctx context.Context, r *http.Request) context.Context {
-	ctx = trace.StartSpan(ctx, r)
+	//ctx = trace.StartSpan(ctx, r)
+	ctx = StartSpan(ctx, r)
 	ctx = log.BuildLogger(ctx)
 	return ctx
 }
 
 func afterHandler(ctx context.Context, w http.ResponseWriter) context.Context {
-	ctx = trace.FinishSpan(ctx, w)
+	// ctx = trace.FinishSpan(ctx, w)
 	// ctx = syncLogger(ctx)
+	ctx = FinishSpan(ctx, w)
 	return ctx
 }

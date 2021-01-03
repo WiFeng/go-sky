@@ -1,2 +1,2 @@
 # go-sky
-golang web framework
+golang micro service framework integrating the go-kit tool.

@@ -80,12 +80,8 @@ type Mysql struct {
 }
 
 // Init ...
-func Init(dir, env string, conf *Config) error {
-	if err := LoadConfig(dir, "config", env, conf); err != nil {
-		return err
-	}
-
-	return nil
+func Init(dir, env string, conf *Config) (string, error) {
+	return LoadConfig(dir, "config", env, conf)
 }
 
 // DecodeFile decode toml file
@@ -94,7 +90,7 @@ func DecodeFile(fpath string, v interface{}) (toml.MetaData, error) {
 }
 
 // LoadConfig ...
-func LoadConfig(dir string, name string, env string, conf interface{}) error {
+func LoadConfig(dir string, name string, env string, conf interface{}) (string, error) {
 	var confFile = fmt.Sprintf("%s/%s.toml", dir, name)
 
 	if env != "" {
@@ -102,8 +98,8 @@ func LoadConfig(dir string, name string, env string, conf interface{}) error {
 	}
 
 	if _, err := DecodeFile(confFile, conf); err != nil {
-		return err
+		return confFile, err
 	}
 
-	return nil
+	return confFile, nil
 }

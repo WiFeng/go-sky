@@ -17,7 +17,9 @@ import (
 )
 
 var (
-	globalConfig config.Config
+	globalConfig      config.Config
+	globalConfigDir   string
+	globalEnvironment string
 )
 
 func initFlag() (*string, *string, error) {
@@ -60,12 +62,16 @@ func init() {
 			fmt.Println("Init flag error. ", err)
 			os.Exit(1)
 		}
+
+		globalConfigDir = *configDir
+		globalEnvironment = *environment
 	}
 
 	// Initialize global config
+	var confFile string
 	{
-		if err = config.Init(*configDir, *environment, &globalConfig); err != nil {
-			fmt.Println("Init config file error. ", err)
+		if confFile, err = config.Init(globalConfigDir, globalEnvironment, &globalConfig); err != nil {
+			fmt.Printf("Init config file error. path:%s, err:%v\n", confFile, err)
 			os.Exit(1)
 		}
 	}
@@ -74,7 +80,7 @@ func init() {
 	{
 		var logger log.Logger
 		if logger, err = log.Init(globalConfig.Server.Log); err != nil {
-			fmt.Println("Init config file error. ", err)
+			fmt.Println("Init logger error. ", err)
 			os.Exit(1)
 		}
 		_ = logger
@@ -88,7 +94,7 @@ func init() {
 		var tracerCloser io.Closer
 		serivceName := globalConfig.Server.Name
 		if _, tracerCloser, err = trace.Init(serivceName); err != nil {
-			fmt.Println("Init config file error. ", err)
+			fmt.Println("Init trace error. ", err)
 			os.Exit(1)
 		}
 		defer tracerCloser.Close()
@@ -105,6 +111,23 @@ func init() {
 	{
 		skyhttp.InitClient(context.Background(), globalConfig.Client)
 	}
+}
+
+// LoadConfig ...
+func LoadConfig(name string, conf interface{}) (err error) {
+	var confFile string
+	if confFile, err = config.LoadConfig(globalConfigDir, name, globalEnvironment, conf); err != nil {
+		log.Errorf(context.Background(), "Load config error. path:%s, err:%v", confFile, err)
+		return
+	}
+
+	log.Infof(context.Background(), "Load config successfully. path:%s", confFile)
+	return
+}
+
+// LoadAppConfig ...
+func LoadAppConfig(conf interface{}) error {
+	return LoadConfig("app", conf)
 }
 
 // Run ...

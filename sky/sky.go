@@ -19,6 +19,7 @@ import (
 var (
 	globalConfig      config.Config
 	globalConfigDir   string
+	globalConfigFile  string
 	globalEnvironment string
 )
 
@@ -74,6 +75,7 @@ func init() {
 			fmt.Printf("Init config file error. path:%s, err:%v\n", confFile, err)
 			os.Exit(1)
 		}
+		globalConfigFile = confFile
 	}
 
 	// Initialzie logger
@@ -111,17 +113,19 @@ func init() {
 	{
 		skyhttp.InitClient(context.Background(), globalConfig.Client)
 	}
+
+	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
 }
 
 // LoadConfig ...
 func LoadConfig(name string, conf interface{}) (err error) {
 	var confFile string
 	if confFile, err = config.LoadConfig(globalConfigDir, name, globalEnvironment, conf); err != nil {
-		log.Errorf(context.Background(), "Load config error. path:%s, err:%v", confFile, err)
+		log.Errorw(context.Background(), "Load config error", "path", confFile, "err", err)
 		return
 	}
 
-	log.Infof(context.Background(), "Load config successfully. path:%s", confFile)
+	log.Infow(context.Background(), "Load config successfully", "path", confFile)
 	return
 }
 

@@ -100,13 +100,15 @@ func NewClient(
 		host = fmt.Sprintf("%s:%d", clf.Host, clf.Port)
 	}
 
-	tgt := &url.URL{
-		Scheme: clf.Protocol,
-		Host:   host,
-		Path:   uri,
+	targetURL, err := url.Parse(uri)
+	if err != nil {
+		return nil, err
 	}
 
-	kc := kithttp.NewClient(method, tgt, enc, dec, options...)
+	targetURL.Scheme = clf.Protocol
+	targetURL.Host = host
+
+	kc := kithttp.NewClient(method, targetURL, enc, dec, options...)
 	c := &Client{
 		kc,
 	}

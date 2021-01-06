@@ -38,6 +38,7 @@ func NewServer(
 	options := []kithttp.ServerOption{
 		kithttp.ServerErrorEncoder(errorEncoder),
 		kithttp.ServerErrorLogger(logger),
+		kithttp.ServerBefore(kithttp.PopulateRequestContext),
 		kithttp.ServerBefore(beforeHandler),
 		kithttp.ServerAfter(afterHandler),
 	}

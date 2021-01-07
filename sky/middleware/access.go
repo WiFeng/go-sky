@@ -7,6 +7,7 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/log"
 	kitendpoint "github.com/go-kit/kit/endpoint"
+	kithttp "github.com/go-kit/kit/transport/http"
 )
 
 // LoggingMiddleware returns an endpoint middleware that logs the

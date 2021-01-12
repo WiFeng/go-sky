@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/WiFeng/go-sky/sky/middleware"
+	"github.com/gorilla/mux"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/opentracing/opentracing-go"
 
@@ -64,25 +65,42 @@ func NewServer(
 	return s
 }
 
+// NewRouter ...
+func NewRouter() *mux.Router {
+	return mux.NewRouter()
+}
+
 // ListenAndServe ...
 func ListenAndServe(ctx context.Context, conf config.HTTP, httpHandler http.Handler) {
 
 	var g group.Group
+	var s *http.Server
 	{
-		// httpAddr is configurable
-		httpAddr := &conf.Addr
 
-		// The HTTP listener mounts the Go kit HTTP handler we created.
-		httpListener, err := net.Listen("tcp", *httpAddr)
-		if err != nil {
-			log.Fatalw(ctx, "listen error", "transport", "HTTP", "during", "Listen", "err", err)
-			os.Exit(1)
+		httpAddr := conf.Addr
+		s = &http.Server{
+			Addr: httpAddr,
+			// Good practice to set timeouts to avoid Slowloris attacks.
+			WriteTimeout: time.Second * 15,
+			ReadTimeout:  time.Second * 15,
+			IdleTimeout:  time.Second * 60,
+			Handler:      httpHandler, // Pass our instance of gorilla/mux in.
 		}
-		g.Add(func() error {
-			log.Infow(ctx, "serve start", "transport", "HTTP", "addr", *httpAddr)
-			return http.Serve(httpListener, httpHandler)
-		}, func(error) {
-			httpListener.Close()
+
+		g.Add(func() (err error) {
+			defer func(ctx context.Context) {
+				if err == http.ErrServerClosed {
+					return
+				}
+				log.Fatalw(ctx, "listen error", "transport", "HTTP", "during", "Listen", "err", err)
+			}(ctx)
+
+			log.Infow(ctx, "serve start", "transport", "HTTP", "addr", httpAddr)
+			err = s.ListenAndServe()
+			return
+		}, func(err error) {
+			log.Info(ctx, "serve prepare shutdown. ", err)
+			s.Shutdown(ctx)
 		})
 	}
 

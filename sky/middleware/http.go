@@ -64,7 +64,7 @@ func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
 				}
 			}
 
-			log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), "host", r.Host, "req", reqBody,
+			log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
 				"resp", respBody, "status", iw.statusCode, "request_time", time.Since(begin).Microseconds())
 		}(time.Now())
 

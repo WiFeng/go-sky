@@ -49,6 +49,15 @@ type logger struct {
 // default logger
 var defaultLogger Logger
 
+var (
+	// TypeKey ...
+	TypeKey = "file"
+	// TypeValAccess ...
+	TypeValAccess = "access.log"
+	// TypeValTransport ...
+	TypeValTransport = "transport.log"
+)
+
 // Init ...
 func Init(logConf config.Log) (Logger, error) {
 	logger, err := NewLogger(logConf)

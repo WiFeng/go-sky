@@ -70,19 +70,20 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 
 // NewClient ...
 func NewClient(
-	name string,
+	ctx context.Context,
+	serviceName string,
 	method string,
 	uri string,
 	enc kithttp.EncodeRequestFunc,
 	dec kithttp.DecodeResponseFunc,
 	opt ...kithttp.ClientOption) (*Client, error) {
 
-	cl, ok := clientMap[name]
+	cl, ok := clientMap[serviceName]
 	if !ok {
 		return nil, ErrConfigNotFound
 	}
 
-	clf, ok := clientConfig[name]
+	clf, ok := clientConfig[serviceName]
 	if !ok {
 		return nil, ErrConfigNotFound
 	}

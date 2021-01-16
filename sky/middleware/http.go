@@ -104,7 +104,7 @@ func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 				}
 			}
 
-			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValTransport, "host", req.Host, "req", reqBody,
+			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
 				"resp", respBody, "status", resp.StatusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 		}(time.Now())
 
@@ -116,11 +116,10 @@ func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 // HTTPClientTracingMiddleware ...
 func HTTPClientTracingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 	return ClientDoFunc(func(req *http.Request) (*http.Response, error) {
-		ctx := req.Context()
-
-		defer func(begin time.Time) {
-			log.Infow(ctx, "", "request_time2", time.Since(begin).Microseconds())
-		}(time.Now())
+		var ctx = req.Context()
+		var logger = log.LoggerFromContext(ctx)
+		var tracer = opentracing.GlobalTracer()
+		kitopentracing.ContextToHTTP(tracer, logger)(ctx, req)
 		return next.Do(req)
 	})
 }

@@ -12,10 +12,12 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/sky/middleware"
 )
 
 var (
-	clientMap    = map[string]*http.Client{}
+	clientMap    = map[string]kithttp.HTTPClient{}
 	clientConfig = map[string]config.Client{}
 )
 
@@ -23,11 +25,6 @@ var (
 	// ErrConfigNotFound ...
 	ErrConfigNotFound = errors.New("client config is not found")
 )
-
-// Client ...
-type Client struct {
-	*kithttp.Client
-}
 
 // InitClient ...
 func InitClient(ctx context.Context, cfs []config.Client) {
@@ -60,12 +57,21 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 			tr = http.DefaultTransport
 		}
 
-		client := &http.Client{
-			Transport: tr,
-			Timeout:   cf.Timeout * unit,
+		cl := &middleware.Client{
+			Client: &http.Client{
+				Transport: tr,
+				Timeout:   cf.Timeout * unit,
+			},
 		}
-		clientMap[cf.Name] = client
+		cl.Use(middleware.HTTPClientLoggingMiddleware)
+		cl.Use(middleware.HTTPClientTracingMiddleware)
+		clientMap[cf.Name] = cl
 	}
+}
+
+// Client ...
+type Client struct {
+	*kithttp.Client
 }
 
 // NewClient ...
@@ -80,12 +86,18 @@ func NewClient(
 
 	cl, ok := clientMap[serviceName]
 	if !ok {
-		return nil, ErrConfigNotFound
+		err := ErrConfigNotFound
+		log.Errorw(ctx, "http.NewClient, serviceName is not in clientMap map",
+			"service_name", serviceName, "method", method, "uri", uri, "err", err)
+		return nil, err
 	}
 
 	clf, ok := clientConfig[serviceName]
 	if !ok {
-		return nil, ErrConfigNotFound
+		err := ErrConfigNotFound
+		log.Errorw(ctx, "http.NewClient, serviceName is not in clientConfig map",
+			"service_name", serviceName, "method", method, "uri", uri, "err", err)
+		return nil, err
 	}
 
 	options := []kithttp.ClientOption{
@@ -103,6 +115,8 @@ func NewClient(
 
 	targetURL, err := url.Parse(uri)
 	if err != nil {
+		log.Errorw(ctx, "http.NewClient, url.Parse error",
+			"service_name", serviceName, "method", method, "uri", uri, "err", err)
 		return nil, err
 	}
 

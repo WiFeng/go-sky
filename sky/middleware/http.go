@@ -62,11 +62,17 @@ func HTTPServerTracingMiddleware(next http.Handler) http.Handler {
 		var ctx = r.Context()
 		var logger = log.LoggerFromContext(ctx)
 		var tracer = opentracing.GlobalTracer()
-		var operationName = fmt.Sprintf("[%s]%s", r.Method, r.URL)
+		var operationName = fmt.Sprintf("[%s]%s", r.Method, r.URL.Path)
 
 		ctx = kitopentracing.HTTPToContext(tracer, operationName, logger)(ctx, r)
 		ctx = log.BuildLogger(ctx)
 		r = r.WithContext(ctx)
+
+		defer func() {
+			span := opentracing.SpanFromContext(ctx)
+			span.Finish()
+		}()
+
 		next.ServeHTTP(w, r)
 	})
 }

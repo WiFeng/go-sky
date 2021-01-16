@@ -8,12 +8,17 @@ import (
 	"net/http"
 	"os"
 	"text/tabwriter"
+	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/WiFeng/go-sky/sky/pprof"
-	"github.com/WiFeng/go-sky/sky/trace"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-lib/metrics/prometheus"
+
 	skyhttp "github.com/WiFeng/go-sky/sky/transport/http"
+	jaegerconfig "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
 )
 
 var (
@@ -22,35 +27,6 @@ var (
 	globalConfigFile  string
 	globalEnvironment string
 )
-
-func initFlag() (*string, *string, error) {
-	fs := flag.NewFlagSet("short-url", flag.ExitOnError)
-
-	var (
-		configDir   = fs.String("conf", "./conf/", "Config Directory")
-		environment = fs.String("env", "development", "Runing environment")
-	)
-
-	fs.Usage = usageFor(fs, os.Args[0]+" [flags]")
-	err := fs.Parse(os.Args[1:])
-
-	return configDir, environment, err
-}
-
-func usageFor(fs *flag.FlagSet, short string) func() {
-	return func() {
-		fmt.Fprintf(os.Stderr, "USAGE\n")
-		fmt.Fprintf(os.Stderr, "  %s\n", short)
-		fmt.Fprintf(os.Stderr, "\n")
-		fmt.Fprintf(os.Stderr, "FLAGS\n")
-		w := tabwriter.NewWriter(os.Stderr, 0, 2, 2, ' ', 0)
-		fs.VisitAll(func(f *flag.Flag) {
-			fmt.Fprintf(w, "\t-%s %s\t%s\n", f.Name, f.DefValue, f.Usage)
-		})
-		w.Flush()
-		fmt.Fprintf(os.Stderr, "\n")
-	}
-}
 
 func init() {
 	// Initialize flogs
@@ -95,18 +71,21 @@ func init() {
 	{
 		var tracerCloser io.Closer
 		serivceName := globalConfig.Server.Name
-		if _, tracerCloser, err = trace.Init(serivceName); err != nil {
+		if _, tracerCloser, err = initTrace(serivceName); err != nil {
 			fmt.Println("Init trace error. ", err)
 			os.Exit(1)
 		}
-		defer tracerCloser.Close()
+
+		// TODO:
+		_ = tracerCloser
+		// defer tracerCloser.Close()
 	}
 
 	// Initialize pprof
 	{
 		pprofHost := globalConfig.Server.PProf.Host
 		pporfPort := globalConfig.Server.PProf.Port
-		pprof.Init(context.Background(), pprofHost, pporfPort)
+		initPProf(context.Background(), pprofHost, pporfPort)
 	}
 
 	// Initialize client
@@ -115,6 +94,73 @@ func init() {
 	}
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
+}
+
+func initFlag() (*string, *string, error) {
+	fs := flag.NewFlagSet("short-url", flag.ExitOnError)
+
+	var (
+		configDir   = fs.String("conf", "./conf/", "Config Directory")
+		environment = fs.String("env", "development", "Runing environment")
+	)
+
+	fs.Usage = usageFor(fs, os.Args[0]+" [flags]")
+	err := fs.Parse(os.Args[1:])
+
+	return configDir, environment, err
+}
+
+func initPProf(ctx context.Context, host string, port int) {
+	if port < 1 {
+		return
+	}
+
+	go func() {
+		addr := fmt.Sprintf("%s:%d", host, port)
+		log.Infof(ctx, "Start HTTP PPorf. http://%s", addr)
+		log.Fatal(ctx, http.ListenAndServe(addr, nil))
+	}()
+
+}
+
+func initTrace(serviceName string) (opentracing.Tracer, io.Closer, error) {
+	metricsFactory := prometheus.New()
+
+	//logger := log.GetDefaultLogger()
+	loggerOption := jaegerconfig.Logger(jaegerlog.DebugLogAdapter(jaeger.StdLogger))
+	tracer, tracerCloser, err := jaegerconfig.Configuration{
+		ServiceName: serviceName,
+		Sampler: &jaegerconfig.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegerconfig.ReporterConfig{
+			// LogSpans:          true,
+			// CollectorEndpoint: "http://localhost:14268/api/traces",
+			LocalAgentHostPort:  "localhost:6831",
+			BufferFlushInterval: time.Second * 1,
+		},
+	}.NewTracer(
+		jaegerconfig.Metrics(metricsFactory),
+		loggerOption,
+	)
+	opentracing.InitGlobalTracer(tracer)
+	return tracer, tracerCloser, err
+}
+
+func usageFor(fs *flag.FlagSet, short string) func() {
+	return func() {
+		fmt.Fprintf(os.Stderr, "USAGE\n")
+		fmt.Fprintf(os.Stderr, "  %s\n", short)
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "FLAGS\n")
+		w := tabwriter.NewWriter(os.Stderr, 0, 2, 2, ' ', 0)
+		fs.VisitAll(func(f *flag.Flag) {
+			fmt.Fprintf(w, "\t-%s %s\t%s\n", f.Name, f.DefValue, f.Usage)
+		})
+		w.Flush()
+		fmt.Fprintf(os.Stderr, "\n")
+	}
 }
 
 // LoadConfig ...
@@ -134,10 +180,13 @@ func LoadAppConfig(conf interface{}) error {
 	return LoadConfig("app", conf)
 }
 
-// Run ...
-func Run(httpHandler http.Handler) {
-
+// RunHTTPServer ...
+func RunHTTPServer(handler http.Handler) {
 	httpConfig := globalConfig.Server.HTTP
-	skyhttp.ListenAndServe(context.Background(), httpConfig, httpHandler)
+	skyhttp.ListenAndServe(context.Background(), httpConfig, handler)
+}
 
+// Run ...
+func Run(handler http.Handler) {
+	RunHTTPServer(handler)
 }

@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/trace"
+	"github.com/opentracing/opentracing-go"
+	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
 )
 
@@ -111,11 +112,26 @@ func (l logger) With(args ...interface{}) Logger {
 	return logger
 }
 
+// GetTraceID Get trace id from the context.
+func GetTraceID(ctx context.Context) string {
+	var traceID string
+	span := opentracing.SpanFromContext(ctx)
+	if span != nil {
+		spanContext := span.Context()
+		jeagerSpanContext, ok := spanContext.(jaegerclient.SpanContext)
+		if ok {
+			traceID = jeagerSpanContext.TraceID().String()
+		}
+	}
+
+	return traceID
+}
+
 // BuildLogger ...
 func BuildLogger(ctx context.Context) context.Context {
 	newLogg := GetDefaultLogger()
 
-	traceID := trace.GetTraceID(ctx)
+	traceID := GetTraceID(ctx)
 	if traceID != "" {
 		newLogg = newLogg.With(traceIDKey, traceID)
 	} else {

@@ -17,6 +17,7 @@ import (
 	"github.com/uber/jaeger-lib/metrics/prometheus"
 
 	skyhttp "github.com/WiFeng/go-sky/sky/transport/http"
+	skyredis "github.com/WiFeng/go-sky/sky/transport/redis"
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 )
@@ -91,6 +92,11 @@ func init() {
 	// Initialize client
 	{
 		skyhttp.InitClient(context.Background(), globalConfig.Client)
+	}
+
+	// Initialize redis
+	{
+		skyredis.Init(context.Background(), globalConfig.Redis)
 	}
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)

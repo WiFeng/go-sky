@@ -117,7 +117,7 @@ func initPProf(ctx context.Context, host string, port int) {
 
 	go func() {
 		addr := fmt.Sprintf("%s:%d", host, port)
-		log.Infof(ctx, "Start HTTP PPorf. http://%s", addr)
+		log.Infof(ctx, "Start HTTP PProf. http://%s", addr)
 		log.Fatal(ctx, http.ListenAndServe(addr, nil))
 	}()
 

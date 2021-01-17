@@ -48,6 +48,10 @@ func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
 				}
 			}
 
+			if span := opentracing.SpanFromContext(ctx); span != nil {
+				span.SetTag("http.status", iw.statusCode)
+			}
+
 			log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
 				"resp", respBody, "status", iw.statusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 		}(time.Now())
@@ -62,15 +66,16 @@ func HTTPServerTracingMiddleware(next http.Handler) http.Handler {
 		var ctx = r.Context()
 		var logger = log.LoggerFromContext(ctx)
 		var tracer = opentracing.GlobalTracer()
-		var operationName = fmt.Sprintf("[%s]%s", r.Method, r.URL.Path)
+		var operationName = fmt.Sprintf("[%s] %s", r.Method, r.URL.Path)
 
 		ctx = kitopentracing.HTTPToContext(tracer, operationName, logger)(ctx, r)
 		ctx = log.BuildLogger(ctx)
 		r = r.WithContext(ctx)
 
 		defer func() {
-			span := opentracing.SpanFromContext(ctx)
-			span.Finish()
+			if span := opentracing.SpanFromContext(ctx); span != nil {
+				span.Finish()
+			}
 		}()
 
 		next.ServeHTTP(w, r)

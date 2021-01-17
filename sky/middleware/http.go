@@ -11,6 +11,7 @@ import (
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/opentracing/opentracing-go"
+	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
 
 // HTTPServerLoggingMiddleware ...
@@ -49,7 +50,7 @@ func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
 			}
 
 			if span := opentracing.SpanFromContext(ctx); span != nil {
-				span.SetTag("http.status", iw.statusCode)
+				opentracingext.HTTPStatusCode.Set(span, uint16(iw.statusCode))
 			}
 
 			log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
@@ -126,11 +127,32 @@ func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 
 // HTTPClientTracingMiddleware ...
 func HTTPClientTracingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return ClientDoFunc(func(req *http.Request) (*http.Response, error) {
+	return ClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
 		var ctx = req.Context()
 		var logger = log.LoggerFromContext(ctx)
 		var tracer = opentracing.GlobalTracer()
+
+		var parentSpan opentracing.Span
+		var childSpan opentracing.Span
+
+		defer func() {
+			if childSpan != nil {
+				opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
+				childSpan.Finish()
+			}
+		}()
+
+		if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+			childSpan = parentSpan.Tracer().StartSpan(
+				fmt.Sprintf("[%s] %s", req.Method, req.URL.Path),
+				opentracing.ChildOf(parentSpan.Context()),
+				opentracingext.SpanKindRPCClient,
+			)
+			ctx = opentracing.ContextWithSpan(ctx, childSpan)
+		}
+
 		kitopentracing.ContextToHTTP(tracer, logger)(ctx, req)
-		return next.Do(req)
+		resp, err = next.Do(req)
+		return
 	})
 }

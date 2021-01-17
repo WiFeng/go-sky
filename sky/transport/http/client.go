@@ -63,8 +63,10 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 				Timeout:   cf.Timeout * unit,
 			},
 		}
-		cl.Use(middleware.HTTPClientLoggingMiddleware)
+
 		cl.Use(middleware.HTTPClientTracingMiddleware)
+		cl.Use(middleware.HTTPClientLoggingMiddleware)
+
 		clientMap[cf.Name] = cl
 	}
 }

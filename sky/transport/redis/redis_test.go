@@ -25,8 +25,9 @@ func TestMain(m *testing.M) {
 	}
 
 	logConf := config.Log{
-		Level:    zap.NewAtomicLevelAt(zapcore.InfoLevel),
-		Encoding: "json",
+		Level:       zap.NewAtomicLevelAt(zapcore.InfoLevel),
+		Encoding:    "json",
+		OutputPaths: []string{"stdout"},
 	}
 	if _, err := log.Init(logConf); err != nil {
 		fmt.Println("Error:", err)

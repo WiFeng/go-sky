@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Server Server
 	Redis  []Redis
-	Mysql  []Mysql
+	DB     []DB
 	Client []Client
 }
 
@@ -68,9 +68,10 @@ type Redis struct {
 	DB   int
 }
 
-// Mysql mysql config
-type Mysql struct {
+// DB config ...
+type DB struct {
 	Name    string
+	Driver  string
 	Host    string
 	Port    int
 	User    string

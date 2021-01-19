@@ -49,7 +49,7 @@ func (c *Client) Use(mwf ...ClientMiddlewareFunc) {
 }
 
 // Do ...
-func (c *Client) Do(req *http.Request) (*http.Response, error) {
+func (c Client) Do(req *http.Request) (*http.Response, error) {
 	var cl = kithttp.HTTPClient(c.Client)
 	for i := len(c.middlewares) - 1; i >= 0; i-- {
 		cl = c.middlewares[i].Middleware(cl)

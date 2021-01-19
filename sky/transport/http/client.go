@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	clientMap    = map[string]kithttp.HTTPClient{}
+	clientMap    = map[string]*http.Client{}
 	clientConfig = map[string]config.Client{}
 )
 
@@ -57,16 +57,10 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 			tr = http.DefaultTransport
 		}
 
-		cl := &middleware.Client{
-			Client: &http.Client{
-				Transport: tr,
-				Timeout:   cf.Timeout * unit,
-			},
+		cl := &http.Client{
+			Transport: tr,
+			Timeout:   cf.Timeout * unit,
 		}
-
-		cl.Use(middleware.HTTPClientTracingMiddleware)
-		cl.Use(middleware.HTTPClientLoggingMiddleware)
-
 		clientMap[cf.Name] = cl
 	}
 }
@@ -102,8 +96,14 @@ func NewClient(
 		return nil, err
 	}
 
+	client := middleware.Client{
+		Client: cl,
+	}
+	client.Use(middleware.HTTPClientTracingMiddleware)
+	client.Use(middleware.HTTPClientLoggingMiddleware)
+
 	options := []kithttp.ClientOption{
-		kithttp.SetClient(cl),
+		kithttp.SetClient(client),
 	}
 
 	if opt != nil {

@@ -9,10 +9,11 @@ import (
 
 // Config config
 type Config struct {
-	Server Server
-	Redis  []Redis
-	DB     []DB
-	Client []Client
+	Server        Server
+	Redis         []Redis
+	DB            []DB
+	Client        []Client
+	Elasticsearch []Elasticsearch
 }
 
 // Server server config
@@ -34,18 +35,8 @@ type PProf struct {
 	Port int
 }
 
-// Client ...
-type Client struct {
-	Name     string
-	Host     string
-	Port     int
-	Protocol string
-
-	CustomTranport bool
-	MillSecUnit    bool
-
-	Timeout time.Duration
-
+// HTTPTransport ...
+type HTTPTransport struct {
 	IdleConnTimeout       time.Duration
 	TLSHandshakeTimeout   time.Duration
 	ExpectContinueTimeout time.Duration
@@ -57,6 +48,20 @@ type Client struct {
 
 	DisableKeepAlives  bool
 	DisableCompression bool
+}
+
+// Client ...
+type Client struct {
+	Name     string
+	Host     string
+	Port     int
+	Protocol string
+
+	CustomTranport bool
+	MillSecUnit    bool
+
+	Timeout   time.Duration
+	Transport HTTPTransport
 }
 
 // Redis redis config
@@ -78,6 +83,14 @@ type DB struct {
 	Pass    string
 	DB      string
 	Charset string
+}
+
+// Elasticsearch ...
+type Elasticsearch struct {
+	Addresses []string
+	Username  string
+	Password  string
+	Transport HTTPTransport
 }
 
 // Init ...

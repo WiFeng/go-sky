@@ -39,18 +39,17 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 
 		if cf.CustomTranport {
 			tr = &http.Transport{
+				MaxConnsPerHost:     cf.Transport.MaxConnsPerHost,
+				MaxIdleConns:        cf.Transport.MaxIdleConns,
+				MaxIdleConnsPerHost: cf.Transport.MaxIdleConnsPerHost,
 
-				MaxConnsPerHost:     cf.MaxConnsPerHost,
-				MaxIdleConns:        cf.MaxIdleConns,
-				MaxIdleConnsPerHost: cf.MaxIdleConnsPerHost,
+				IdleConnTimeout:       cf.Transport.IdleConnTimeout * unit,
+				TLSHandshakeTimeout:   cf.Transport.TLSHandshakeTimeout * unit,
+				ExpectContinueTimeout: cf.Transport.ExpectContinueTimeout * unit,
+				ResponseHeaderTimeout: cf.Transport.ResponseHeaderTimeout * unit,
 
-				IdleConnTimeout:       cf.IdleConnTimeout * unit,
-				TLSHandshakeTimeout:   cf.TLSHandshakeTimeout * unit,
-				ExpectContinueTimeout: cf.ExpectContinueTimeout * unit,
-				ResponseHeaderTimeout: cf.ResponseHeaderTimeout * unit,
-
-				DisableKeepAlives:  cf.DisableKeepAlives,
-				DisableCompression: cf.DisableCompression,
+				DisableKeepAlives:  cf.Transport.DisableKeepAlives,
+				DisableCompression: cf.Transport.DisableCompression,
 			}
 		} else {
 			tr = http.DefaultTransport

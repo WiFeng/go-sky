@@ -7,7 +7,6 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/WiFeng/go-sky/sky/middleware"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -43,8 +42,8 @@ func Init(ctx context.Context, cfs []config.Redis) {
 			}
 		}
 
-		rdb.AddHook(middleware.RedisTracingHook{})
-		rdb.AddHook(middleware.RedisLoggingHook{})
+		rdb.AddHook(tracingHook{})
+		rdb.AddHook(loggingHook{})
 
 		log.Infof(ctx, "Init redis [%s] %+v", cf.Name, cf)
 		redisMap[cf.Name] = rdb

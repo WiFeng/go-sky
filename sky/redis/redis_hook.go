@@ -1,4 +1,4 @@
-package middleware
+package redis
 
 import (
 	"context"
@@ -9,37 +9,37 @@ import (
 	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
 
-// RedisLoggingHook ...
-type RedisLoggingHook struct {
+// loggingHook ...
+type loggingHook struct {
 }
 
 // BeforeProcess ....
-func (r RedisLoggingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+func (r loggingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
 	return ctx, nil
 }
 
 // AfterProcess ...
-func (r RedisLoggingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+func (r loggingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	return nil
 }
 
 // BeforeProcessPipeline ...
-func (r RedisLoggingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+func (r loggingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
 	return ctx, nil
 }
 
 // AfterProcessPipeline ...
-func (r RedisLoggingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+func (r loggingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	return nil
 
 }
 
-// RedisTracingHook ...
-type RedisTracingHook struct {
+// tracingHook ...
+type tracingHook struct {
 }
 
 // BeforeProcess ...
-func (r RedisTracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+func (r tracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
 
 	var parentSpan opentracing.Span
 	var childSpan opentracing.Span
@@ -62,7 +62,7 @@ func (r RedisTracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (c
 }
 
 // AfterProcess ...
-func (r RedisTracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+func (r tracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	if childSpan := opentracing.SpanFromContext(ctx); childSpan != nil {
 		childSpan.Finish()
 	}
@@ -71,12 +71,12 @@ func (r RedisTracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) err
 }
 
 // BeforeProcessPipeline ...
-func (r RedisTracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+func (r tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
 	return ctx, nil
 }
 
 // AfterProcessPipeline ...
-func (r RedisTracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+func (r tracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	return nil
 
 }

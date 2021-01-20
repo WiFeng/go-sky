@@ -13,7 +13,6 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/WiFeng/go-sky/sky/middleware"
 )
 
 var (
@@ -96,11 +95,11 @@ func NewClient(
 		return nil, err
 	}
 
-	client := middleware.HTTPClient{
+	client := HTTPClient{
 		Client: cl,
 	}
-	client.Use(middleware.HTTPClientTracingMiddleware)
-	client.Use(middleware.HTTPClientLoggingMiddleware)
+	client.Use(HTTPClientTracingMiddleware)
+	client.Use(HTTPClientLoggingMiddleware)
 
 	options := []kithttp.ClientOption{
 		kithttp.SetClient(client),

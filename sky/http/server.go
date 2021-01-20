@@ -12,7 +12,6 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/WiFeng/go-sky/sky/middleware"
 	"github.com/gorilla/mux"
 	"github.com/oklog/oklog/pkg/group"
 
@@ -44,7 +43,7 @@ func NewServer(
 		options = append(options, opt...)
 	}
 
-	e = middleware.PanicMiddleware()(e)
+	e = PanicMiddleware()(e)
 
 	ks := kithttp.NewServer(
 		e,
@@ -63,8 +62,8 @@ func NewServer(
 // NewRouter ...
 func NewRouter() *mux.Router {
 	r := mux.NewRouter()
-	r.Use(middleware.HTTPServerTracingMiddleware)
-	r.Use(middleware.HTTPServerLoggingMiddleware)
+	r.Use(HTTPServerTracingMiddleware)
+	r.Use(HTTPServerLoggingMiddleware)
 	return r
 }
 

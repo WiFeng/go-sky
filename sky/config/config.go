@@ -87,10 +87,12 @@ type DB struct {
 
 // Elasticsearch ...
 type Elasticsearch struct {
-	Addresses []string
-	Username  string
-	Password  string
-	Transport HTTPTransport
+	Name           string
+	Addresses      []string
+	Username       string
+	Password       string
+	CustomTranport bool
+	Transport      HTTPTransport
 }
 
 // Init ...

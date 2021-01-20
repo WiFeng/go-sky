@@ -13,12 +13,13 @@ import (
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-lib/metrics/prometheus"
 	"github.com/uber/jaeger-client-go"
-	
+	"github.com/uber/jaeger-lib/metrics/prometheus"
+
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
-	
+
+	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
 	skyhttp "github.com/WiFeng/go-sky/sky/http"
 	skyredis "github.com/WiFeng/go-sky/sky/redis"
 )
@@ -98,6 +99,11 @@ func init() {
 	// Initialize redis
 	{
 		skyredis.Init(context.Background(), globalConfig.Redis)
+	}
+
+	// Initialize elasticsearch
+	{
+		skyes.Init(context.Background(), globalConfig.Elasticsearch)
 	}
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)

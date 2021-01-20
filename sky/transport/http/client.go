@@ -96,7 +96,7 @@ func NewClient(
 		return nil, err
 	}
 
-	client := middleware.Client{
+	client := middleware.HTTPClient{
 		Client: cl,
 	}
 	client.Use(middleware.HTTPClientTracingMiddleware)

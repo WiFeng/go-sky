@@ -85,7 +85,7 @@ func HTTPServerTracingMiddleware(next http.Handler) http.Handler {
 
 // HTTPClientLoggingMiddleware ...
 func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return ClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
+	return HTTPClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
 		ctx := req.Context()
 
 		var reqBodyBytes = make([]byte, 0)
@@ -127,7 +127,7 @@ func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 
 // HTTPClientTracingMiddleware ...
 func HTTPClientTracingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return ClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
+	return HTTPClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
 		var ctx = req.Context()
 		var logger = log.LoggerFromContext(ctx)
 		var tracer = opentracing.GlobalTracer()

@@ -27,29 +27,29 @@ func (w *HTTPResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// ClientDoFunc ...
-type ClientDoFunc func(*http.Request) (*http.Response, error)
+// HTTPClientDoFunc ...
+type HTTPClientDoFunc func(*http.Request) (*http.Response, error)
 
 // Do ...
-func (c ClientDoFunc) Do(req *http.Request) (*http.Response, error) {
+func (c HTTPClientDoFunc) Do(req *http.Request) (*http.Response, error) {
 	return c(req)
 }
 
-// Client ...
-type Client struct {
+// HTTPClient ...
+type HTTPClient struct {
 	*http.Client
-	middlewares []ClientMiddleware
+	middlewares []HTTPClientMiddleware
 }
 
 // Use ...
-func (c *Client) Use(mwf ...ClientMiddlewareFunc) {
+func (c *HTTPClient) Use(mwf ...HTTPClientMiddlewareFunc) {
 	for _, fn := range mwf {
 		c.middlewares = append(c.middlewares, fn)
 	}
 }
 
 // Do ...
-func (c Client) Do(req *http.Request) (*http.Response, error) {
+func (c HTTPClient) Do(req *http.Request) (*http.Response, error) {
 	var cl = kithttp.HTTPClient(c.Client)
 	for i := len(c.middlewares) - 1; i >= 0; i-- {
 		cl = c.middlewares[i].Middleware(cl)
@@ -57,22 +57,22 @@ func (c Client) Do(req *http.Request) (*http.Response, error) {
 	return cl.Do(req)
 }
 
-// ClientMiddleware ...
-type ClientMiddleware interface {
+// HTTPClientMiddleware ...
+type HTTPClientMiddleware interface {
 	Middleware(kithttp.HTTPClient) kithttp.HTTPClient
 }
 
-// ClientMiddlewareFunc ...
-type ClientMiddlewareFunc func(kithttp.HTTPClient) kithttp.HTTPClient
+// HTTPClientMiddlewareFunc ...
+type HTTPClientMiddlewareFunc func(kithttp.HTTPClient) kithttp.HTTPClient
 
 // Middleware allows MiddlewareFunc to implement the middleware interface.
-func (mw ClientMiddlewareFunc) Middleware(httpClient kithttp.HTTPClient) kithttp.HTTPClient {
+func (mw HTTPClientMiddlewareFunc) Middleware(httpClient kithttp.HTTPClient) kithttp.HTTPClient {
 	return mw(httpClient)
 }
 
 // HTTPClientDoMiddleware ...
 func HTTPClientDoMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return ClientDoFunc(func(req *http.Request) (*http.Response, error) {
+	return HTTPClientDoFunc(func(req *http.Request) (*http.Response, error) {
 		ctx := req.Context()
 
 		defer func(begin time.Time) {

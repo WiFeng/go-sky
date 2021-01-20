@@ -6,96 +6,96 @@ import (
 )
 
 var (
-	// ErrSQLDeprecatedMethod ...
-	ErrSQLDeprecatedMethod = errors.new("sql deprecated method")
+	// ErrDeprecatedMethod ...
+	ErrDeprecatedMethod = errors.new("sql deprecated method")
 )
 
-// SQLConn ...
-type SQLConn struct {
+// Conn ...
+type Conn struct {
 	*sql.Conn
 }
 
-// SQLDB ...
-type SQLDB struct {
+// DB ...
+type DB struct {
 	*sql.DB
 }
 
 // Begin ...
-func (db *SQLDB) Begin() (*Tx, error) {
-	return nil, ErrSQLDeprecatedMethod
+func (db *DB) Begin() (*Tx, error) {
+	return nil, ErrDeprecatedMethod
 }
 
 // BeginTx ...
-func (db *SQLDB) BeginTx(ctx context.Context, opts *TxOptions) (*Tx, error) {
+func (db *DB) BeginTx(ctx context.Context, opts *TxOptions) (*Tx, error) {
 
 }
 
 // Close ...
-func (db *SQLDB) Close() error {
+func (db *DB) Close() error {
 	return db.DB.Close()
 }
 
 // Conn ...
-func (db *SQLDB) Conn(ctx context.Context) (*Conn, error) {
+func (db *DB) Conn(ctx context.Context) (*Conn, error) {
 	return db.DB.Conn()
 }
 
 // Exec ...
-func (db *SQLDB) Exec(query string, args ...interface{}) (Result, error) {
-	return nil, ErrSQLDeprecatedMethod
+func (db *DB) Exec(query string, args ...interface{}) (Result, error) {
+	return nil, ErrDeprecatedMethod
 }
 
 // ExecContext ...
-func (db *SQLDB) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error) {
+func (db *DB) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error) {
 	return db.DB.ExecContext(ctx, query, args...)
 }
 
 // Ping ....
-func (db *SQLDB) Ping() error {
-	return ErrSQLDeprecatedMethod
+func (db *DB) Ping() error {
+	return ErrDeprecatedMethod
 }
 
 // PingContext ...
-func (db *SQLDB) PingContext(ctx context.Context) error {
+func (db *DB) PingContext(ctx context.Context) error {
 	return db.DB.PingContext(ctx)
 }
 
 // Prepare ...
-func (db *SQLDB) Prepare(query string) (*Stmt, error) {
-	return nil, ErrSQLDeprecatedMethod
+func (db *DB) Prepare(query string) (*Stmt, error) {
+	return nil, ErrDeprecatedMethod
 }
 
 // PrepareContext ...
-func (db *SQLDB) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
+func (db *DB) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
 	return db.DB.PrepareContext(ctx, query)
 }
 
 // Query ...
-func (db *SQLDB) Query(query string, args ...interface{}) (*Rows, error) {
-	return nil, ErrSQLDeprecatedMethod
+func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
+	return nil, ErrDeprecatedMethod
 }
 
 // QueryContext ...
-func (db *SQLDB) QueryContext(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
+func (db *DB) QueryContext(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
 	return db.DB.QueryContext(ctx, query, args...)
 }
 
 // QueryRow ...
-func (db *SQLDB) QueryRow(query string, args ...interface{}) *Row {
-	return nil, ErrSQLDeprecatedMethod
+func (db *DB) QueryRow(query string, args ...interface{}) *Row {
+	return nil, ErrDeprecatedMethod
 }
 
 // QueryRowContext ...
-func (db *DSQLDB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row {
+func (db *DDB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row {
 	return db.DB.QueryRowContext(ctx, query, args...)
 }
 
-// SQLStmt ...
-type SQLStmt struct {
+// Stmt ...
+type Stmt struct {
 	*sql.Stmt
 }
 
-// SQLTx ...
-type SQLTx struct {
+// Tx ...
+type Tx struct {
 	*sql.Tx
 }

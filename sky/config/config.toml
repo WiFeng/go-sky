@@ -1,0 +1,61 @@
+############################################
+#
+# This is a demo of the config file.
+# Please do not use it in production  directly.
+#
+############################################
+
+[server]
+name = "go.srv.demo"
+
+[server.http]
+addr = ":8080"
+
+[server.log]
+level = "debug"
+development = true
+disable_caller = false
+disable_stacktrace = false
+encoding = "json"
+output_paths = ["stdout"]
+error_output_paths = ["stderr"]
+initial_fields = {}
+
+[[redis]]
+name = "redis1"
+host = "127.0.0.1"
+port = 6379
+auth = ""
+db = 0
+
+[[redis]]
+name = "redis2"
+host = "127.0.0.1"
+port = 6379
+auth = ""
+db = 1
+
+[[client1]]
+name = "client1"
+protocol = "http"
+host = "api.example.com:8081"
+customTranport = false
+millSecUnit = false
+timeout = 5
+[client1.transport]
+    IdleConnTimeout = 30
+    MaxConnsPerHost = 10
+
+[[client2]]
+name = "client1"
+protocol = "http"
+host = "api.example.com:8082"
+customTranport = false
+millSecUnit = false
+timeout = 5
+
+[[elasticsearch1]]
+name = "es1"
+addresses = ["http://localhost:9200", "http://localhost:9201"]
+username = ""
+password = ""

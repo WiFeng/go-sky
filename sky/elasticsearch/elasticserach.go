@@ -44,7 +44,7 @@ func Init(ctx context.Context, cfs []config.Elasticsearch) {
 				}
 			}
 			esCfg := elasticsearch.Config{
-				Addresses: cf.Addresses,
+				Addresses: cf.Addrs,
 				Username:  cf.Username,
 				Password:  cf.Password,
 				Transport: tr,

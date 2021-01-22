@@ -57,18 +57,6 @@ func (mw HTTPClientMiddlewareFunc) Middleware(httpClient kithttp.HTTPClient) kit
 	return mw(httpClient)
 }
 
-// HTTPClientDoMiddleware ...
-func HTTPClientDoMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return HTTPClientDoFunc(func(req *http.Request) (*http.Response, error) {
-		ctx := req.Context()
-
-		defer func(begin time.Time) {
-			log.Infow(ctx, "", "request_time", time.Since(begin).Microseconds())
-		}(time.Now())
-		return next.Do(req)
-	})
-}
-
 // ==========================================
 // HTTPClient Middleware
 // ==========================================

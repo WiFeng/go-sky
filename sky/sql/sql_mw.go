@@ -3,11 +3,12 @@ package sql
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 var (
 	// ErrDeprecatedMethod ...
-	ErrDeprecatedMethod = errors.new("sql deprecated method")
+	ErrDeprecatedMethod = errors.New("sql deprecated method")
 )
 
 // Conn ...

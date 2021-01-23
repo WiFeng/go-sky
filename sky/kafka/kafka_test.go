@@ -14,14 +14,14 @@ import (
 )
 
 var (
-	testName = "kafkaName"
+	testName = "testKafka"
 )
 
 func TestMain(m *testing.M) {
 	kafkaConf := []config.Kafka{
 		{
 			Name:  testName,
-			Addrs: []string{},
+			Addrs: []string{"localhost:9092"},
 		},
 	}
 
@@ -40,19 +40,22 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewAsyncProducer(t *testing.T) {
-	_, err := NewAsyncProducer(testName)
+	_, err := NewAsyncProducer(context.Background(), testName)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestSyncProducerSendMessage(t *testing.T) {
-	producer, err := NewSyncProducer(testName)
+	producer, err := NewSyncProducer(context.Background(), testName)
 	if err != nil {
 		t.Error(err)
 	}
 
-	msg := &kafka.ProducerMessage{}
+	msg := &kafka.ProducerMessage{
+		Topic: "go-test-topic",
+		Value: kafka.StringEncoder("vvvvvvvvvvvvv,vvvvvvvvvv"),
+	}
 	_, _, err = producer.SendMessageContext(context.Background(), msg)
 	if err != nil {
 		t.Error(err)

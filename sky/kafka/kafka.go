@@ -42,7 +42,7 @@ func Init(ctx context.Context, cfs []config.Kafka) {
 }
 
 // NewConsumer ...
-func NewConsumer(name string) (kafka.Consumer, error) {
+func NewConsumer(ctx context.Context, name string) (kafka.Consumer, error) {
 	kcl, ok := kafkaMap[name]
 	if !ok {
 		return nil, ErrConfigNotFound
@@ -52,7 +52,7 @@ func NewConsumer(name string) (kafka.Consumer, error) {
 }
 
 // NewConsumerGroup ...
-func NewConsumerGroup(name string, groupID string) (kafka.ConsumerGroup, error) {
+func NewConsumerGroup(ctx context.Context, name string, groupID string) (kafka.ConsumerGroup, error) {
 	kcl, ok := kafkaMap[name]
 	if !ok {
 		return nil, ErrConfigNotFound
@@ -62,7 +62,7 @@ func NewConsumerGroup(name string, groupID string) (kafka.ConsumerGroup, error) 
 }
 
 // NewAsyncProducer ...
-func NewAsyncProducer(name string) (kafka.AsyncProducer, error) {
+func NewAsyncProducer(ctx context.Context, name string) (kafka.AsyncProducer, error) {
 	kcl, ok := kafkaMap[name]
 	if !ok {
 		return nil, ErrConfigNotFound
@@ -72,12 +72,13 @@ func NewAsyncProducer(name string) (kafka.AsyncProducer, error) {
 }
 
 // NewSyncProducer ...
-func NewSyncProducer(name string) (SyncProducer, error) {
+func NewSyncProducer(ctx context.Context, name string) (SyncProducer, error) {
 	kcl, ok := kafkaMap[name]
 	if !ok {
 		return nil, ErrConfigNotFound
 	}
 
+	kcl.Config().Producer.Return.Successes = true
 	sp, err := kafka.NewSyncProducerFromClient(kcl)
 	if err != nil {
 		return nil, err
@@ -86,6 +87,8 @@ func NewSyncProducer(name string) (SyncProducer, error) {
 	spp := &syncProducer{
 		SyncProducer: sp,
 	}
+
+	spp.Use(ctx, SyncProducerSendMessageMiddlewareFunc(SyncProducerSendMessageTracingMiddleware))
 
 	return spp, nil
 }

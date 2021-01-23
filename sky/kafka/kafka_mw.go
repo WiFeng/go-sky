@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	kafka "github.com/Shopify/sarama"
+	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
@@ -37,7 +38,7 @@ func SyncProducerSendMessageCoreFunc(s kafka.SyncProducer) SyncProducerSendMessa
 // SyncProducer ...
 type SyncProducer interface {
 	kafka.SyncProducer
-	Use(mwf ...interface{})
+	Use(ctx context.Context, mwf ...interface{})
 	SendMessageContext(ctx context.Context, msg *kafka.ProducerMessage) (partition int32, offset int64, err error)
 }
 
@@ -48,11 +49,13 @@ type syncProducer struct {
 }
 
 // Use ...
-func (s *syncProducer) Use(mwf ...interface{}) {
+func (s *syncProducer) Use(ctx context.Context, mwf ...interface{}) {
 	for _, fn := range mwf {
 		switch fn := fn.(type) {
-		case SyncProducerSendMessageMiddleware:
+		case SyncProducerSendMessageMiddlewareFunc:
 			s.sendMessageMiddlewares = append(s.sendMessageMiddlewares, fn)
+		default:
+			log.Errorf(ctx, "syncProducer.Use error. ", "type is not found.")
 		}
 	}
 }
@@ -104,6 +107,9 @@ func SyncProducerSendMessageTracingMiddleware(next SyncProducerSendMessage) Sync
 			childSpan = parentSpan.Tracer().StartSpan(
 				"kafka.SyncProducer.SendMessage",
 				opentracing.ChildOf(parentSpan.Context()),
+				opentracing.Tag{Key: "message.topic", Value: msg.Topic},
+				opentracing.Tag{Key: "message.offset", Value: msg.Offset},
+				opentracing.Tag{Key: "message.partition", Value: msg.Partition},
 				opentracing.Tag{Key: string(opentracingext.Component), Value: "kafka"},
 				opentracingext.SpanKindRPCClient,
 			)

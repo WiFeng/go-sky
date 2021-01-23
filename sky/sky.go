@@ -21,6 +21,7 @@ import (
 
 	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
 	skyhttp "github.com/WiFeng/go-sky/sky/http"
+	skykafka "github.com/WiFeng/go-sky/sky/kafka"
 	skyredis "github.com/WiFeng/go-sky/sky/redis"
 )
 
@@ -104,6 +105,11 @@ func init() {
 	// Initialize elasticsearch
 	{
 		skyes.Init(context.Background(), globalConfig.Elasticsearch)
+	}
+
+	// Initialize kafka
+	{
+		skykafka.Init(context.Background(), globalConfig.Kafka)
 	}
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)

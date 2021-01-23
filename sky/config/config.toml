@@ -62,11 +62,6 @@ password = ""
 
 [[kafka]]
 name = "kafka1"
-addrs = ["http://localhost:9200", "http://localhost:9201"]
-customConfig = false
-[kafka.producer]
-    maxMessageBytes = 1000000
-[kafka.consumer]
-    groupId = "xxxx"
+addrs = ["localhost:9092"]
 
 

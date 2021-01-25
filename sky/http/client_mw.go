@@ -119,10 +119,21 @@ func RoundTripperTracingMiddleware(next http.RoundTripper) http.RoundTripper {
 		var childSpan opentracing.Span
 
 		defer func() {
-			if childSpan != nil {
-				opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
-				childSpan.Finish()
+			if childSpan == nil {
+				return
 			}
+			if err != nil {
+				opentracingext.Error.Set(childSpan, true)
+				childSpan.SetTag("http.error", err.Error())
+				childSpan.Finish()
+				return
+			}
+			if resp.StatusCode >= 400 {
+				opentracingext.Error.Set(childSpan, true)
+			}
+
+			opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
+			childSpan.Finish()
 		}()
 
 		if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
@@ -143,38 +154,49 @@ func RoundTripperTracingMiddleware(next http.RoundTripper) http.RoundTripper {
 // RoundTripperLoggingMiddleware ...
 func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 	return RoundTripperFunc(func(req *http.Request) (resp *http.Response, err error) {
-		ctx := req.Context()
-
+		var ctx = req.Context()
 		var reqBodyBytes = make([]byte, 0)
 		var respBodyBytes = make([]byte, 0)
-		{
-			if req.Body != nil {
-				reqBodyBytes, _ = ioutil.ReadAll(req.Body)
-				req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBodyBytes))
-			}
+
+		if req.Body != nil {
+			reqBodyBytes, _ = ioutil.ReadAll(req.Body)
+			req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBodyBytes))
 		}
 
 		defer func(begin time.Time) {
 			var reqBody string
 			var respBody string
-			{
+			var respStatus int
+
+			if resp != nil {
+				respStatus = resp.StatusCode
 				if resp.Body != nil {
 					respBodyBytes, _ = ioutil.ReadAll(resp.Body)
 					resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
 				}
+			}
 
-				reqBody = string(reqBodyBytes)
-				respBody = string(respBodyBytes)
-				if len(reqBody) > 800 {
-					reqBody = reqBody[0:800]
-				}
-				if len(respBody) > 500 {
-					respBody = respBody[0:500]
-				}
+			reqBody = string(reqBodyBytes)
+			respBody = string(respBodyBytes)
+			if len(reqBody) > 800 {
+				reqBody = reqBody[0:800]
+			}
+			if len(respBody) > 500 {
+				respBody = respBody[0:500]
+			}
+
+			if err != nil || respStatus >= 500 {
+				log.Errorw(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
+					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000), "err", err)
+				return
+			} else if respStatus >= 400 {
+				log.Warnw(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
+					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
+				return
 			}
 
 			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
-				"resp", respBody, "status", resp.StatusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
+				"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 		}(time.Now())
 
 		resp, err = next.RoundTrip(req)

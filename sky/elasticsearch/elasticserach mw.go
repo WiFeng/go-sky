@@ -26,10 +26,21 @@ func RoundTripperTracingMiddleware(next http.RoundTripper) http.RoundTripper {
 		var childSpan opentracing.Span
 
 		defer func() {
-			if childSpan != nil {
-				opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
-				childSpan.Finish()
+			if childSpan == nil {
+				return
 			}
+			if err != nil {
+				opentracingext.Error.Set(childSpan, true)
+				childSpan.SetTag("http.error", err.Error())
+				childSpan.Finish()
+				return
+			}
+			if resp.StatusCode >= 400 {
+				opentracingext.Error.Set(childSpan, true)
+			}
+
+			opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
+			childSpan.Finish()
 		}()
 
 		if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {

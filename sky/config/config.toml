@@ -39,10 +39,10 @@ db = 1
 name = "client1"
 protocol = "http"
 host = "api.example.com:8081"
-customTranport = false
-millSecUnit = false
 timeout = 5
 [client.transport]
+    Customized = true
+    MillSecUnit = false
     IdleConnTimeout = 30
     MaxConnsPerHost = 10
 
@@ -50,9 +50,6 @@ timeout = 5
 name = "client2"
 protocol = "http"
 host = "api.example.com:8082"
-customTranport = false
-millSecUnit = false
-timeout = 5
 
 [[elasticsearch]]
 name = "es1"

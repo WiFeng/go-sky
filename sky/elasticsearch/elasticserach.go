@@ -2,13 +2,10 @@ package elasticsearch
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
-	"net"
-	"net/http"
-	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	skyhttp "github.com/WiFeng/go-sky/sky/http"
 	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/elastic/go-elasticsearch/v7"
 )
@@ -32,17 +29,9 @@ func Init(ctx context.Context, cfs []config.Elasticsearch) {
 		var cl *elasticsearch.Client
 		var err error
 		{
-			tr := http.DefaultTransport
-			if cf.CustomTranport {
-				tr = &http.Transport{
-					MaxIdleConnsPerHost:   cf.Transport.MaxIdleConnsPerHost,
-					ResponseHeaderTimeout: cf.Transport.ResponseHeaderTimeout * time.Second,
-					DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
-					TLSClientConfig: &tls.Config{
-						MinVersion: tls.VersionTLS11,
-					},
-				}
-			}
+			tr := skyhttp.NewRoundTripperFromConfig(cf.Transport)
+			tr.Use(RoundTripperTracingMiddleware)
+
 			esCfg := elasticsearch.Config{
 				Addresses: cf.Addrs,
 				Username:  cf.Username,

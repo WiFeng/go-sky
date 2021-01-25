@@ -14,6 +14,12 @@ import (
 
 func TestMain(m *testing.M) {
 
+	esConf := []config.Elasticsearch{
+		{
+			Name: "es1",
+		},
+	}
+
 	logConf := config.Log{
 		Level:       zap.NewAtomicLevelAt(zapcore.InfoLevel),
 		Encoding:    "json",
@@ -21,12 +27,6 @@ func TestMain(m *testing.M) {
 	}
 	if _, err := log.Init(logConf); err != nil {
 		fmt.Println("Error:", err)
-	}
-
-	esConf := []config.Elasticsearch{
-		{
-			Name: "es1",
-		},
 	}
 
 	Init(context.Background(), esConf)

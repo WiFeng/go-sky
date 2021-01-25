@@ -29,6 +29,9 @@ type Client struct {
 
 // HTTPTransport ...
 type HTTPTransport struct {
+	Customized  bool // 定制Transport参数
+	MillSecUnit bool // 是否使用毫秒单位
+
 	IdleConnTimeout       time.Duration
 	TLSHandshakeTimeout   time.Duration
 	ExpectContinueTimeout time.Duration

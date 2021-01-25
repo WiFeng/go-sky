@@ -47,7 +47,7 @@ timeout = 5
     MaxConnsPerHost = 10
 
 [[client]]
-name = "client1"
+name = "client2"
 protocol = "http"
 host = "api.example.com:8082"
 customTranport = false

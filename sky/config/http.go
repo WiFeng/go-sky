@@ -20,17 +20,15 @@ type Client struct {
 	Port     int
 	Protocol string
 
-	CustomTranport bool
-	MillSecUnit    bool
-
-	Timeout   time.Duration
-	Transport HTTPTransport
+	Timeout        time.Duration
+	TimeoutMillSec time.Duration
+	Transport      HTTPTransport
 }
 
 // HTTPTransport ...
 type HTTPTransport struct {
-	Customized  bool // 定制Transport参数
-	MillSecUnit bool // 是否使用毫秒单位
+	Customized  bool
+	MillSecUnit bool
 
 	IdleConnTimeout       time.Duration
 	TLSHandshakeTimeout   time.Duration

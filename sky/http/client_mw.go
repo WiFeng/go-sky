@@ -7,63 +7,142 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
-	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
 
-// HTTPClientDoFunc ...
-type HTTPClientDoFunc func(*http.Request) (*http.Response, error)
+// RoundTripperFunc ...
+type RoundTripperFunc func(*http.Request) (*http.Response, error)
 
-// Do ...
-func (c HTTPClientDoFunc) Do(req *http.Request) (*http.Response, error) {
-	return c(req)
+// RoundTrip ...
+func (r RoundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return r(req)
 }
 
-// HTTPClient ...
-type HTTPClient struct {
-	*http.Client
-	middlewares []HTTPClientMiddleware
+// RoundTripper ...
+type RoundTripper struct {
+	base        http.RoundTripper
+	middlewares []RoundTripperMiddleware
+}
+
+// NewTransport ...
+func NewTransport(cf config.HTTPTransport) *http.Transport {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+
+	if !cf.Customized {
+		return tr
+	}
+
+	unit := time.Second
+	if cf.MillSecUnit {
+		unit = time.Millisecond
+	}
+
+	tr = &http.Transport{
+		MaxConnsPerHost:     cf.MaxConnsPerHost,
+		MaxIdleConns:        cf.MaxIdleConns,
+		MaxIdleConnsPerHost: cf.MaxIdleConnsPerHost,
+
+		IdleConnTimeout:       cf.IdleConnTimeout * unit,
+		TLSHandshakeTimeout:   cf.TLSHandshakeTimeout * unit,
+		ExpectContinueTimeout: cf.ExpectContinueTimeout * unit,
+		ResponseHeaderTimeout: cf.ResponseHeaderTimeout * unit,
+
+		DisableKeepAlives:  cf.DisableKeepAlives,
+		DisableCompression: cf.DisableCompression,
+	}
+
+	return tr
+}
+
+// NewRoundTripper ...
+func NewRoundTripper(base http.RoundTripper, mwf ...RoundTripperMiddlewareFunc) *RoundTripper {
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	roundTripper := &RoundTripper{
+		base: base,
+	}
+	roundTripper.Use(mwf...)
+	return roundTripper
+}
+
+// NewRoundTripperFromConfig ...
+func NewRoundTripperFromConfig(cf config.HTTPTransport) *RoundTripper {
+	return NewRoundTripper(NewTransport(cf))
 }
 
 // Use ...
-func (c *HTTPClient) Use(mwf ...HTTPClientMiddlewareFunc) {
+func (r *RoundTripper) Use(mwf ...RoundTripperMiddlewareFunc) {
 	for _, fn := range mwf {
-		c.middlewares = append(c.middlewares, fn)
+		r.middlewares = append(r.middlewares, fn)
 	}
 }
 
-// Do ...
-func (c HTTPClient) Do(req *http.Request) (*http.Response, error) {
-	var cl = kithttp.HTTPClient(c.Client)
-	for i := len(c.middlewares) - 1; i >= 0; i-- {
-		cl = c.middlewares[i].Middleware(cl)
+// RoundTrip ...
+func (r RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	var rr = r.base
+	for i := len(r.middlewares) - 1; i >= 0; i-- {
+		rr = r.middlewares[i].Middleware(rr)
 	}
-	return cl.Do(req)
+	return rr.RoundTrip(req)
 }
 
-// HTTPClientMiddleware ...
-type HTTPClientMiddleware interface {
-	Middleware(kithttp.HTTPClient) kithttp.HTTPClient
+// RoundTripperMiddleware ...
+type RoundTripperMiddleware interface {
+	Middleware(http.RoundTripper) http.RoundTripper
 }
 
-// HTTPClientMiddlewareFunc ...
-type HTTPClientMiddlewareFunc func(kithttp.HTTPClient) kithttp.HTTPClient
+// RoundTripperMiddlewareFunc ...
+type RoundTripperMiddlewareFunc func(http.RoundTripper) http.RoundTripper
 
 // Middleware allows MiddlewareFunc to implement the middleware interface.
-func (mw HTTPClientMiddlewareFunc) Middleware(httpClient kithttp.HTTPClient) kithttp.HTTPClient {
-	return mw(httpClient)
+func (mw RoundTripperMiddlewareFunc) Middleware(roundTripper http.RoundTripper) http.RoundTripper {
+	return mw(roundTripper)
 }
 
 // ==========================================
-// HTTPClient Middleware
+// RoundTripper Middleware
 // ==========================================
 
-// HTTPClientLoggingMiddleware ...
-func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return HTTPClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
+// RoundTripperTracingMiddleware ...
+func RoundTripperTracingMiddleware(next http.RoundTripper) http.RoundTripper {
+	return RoundTripperFunc(func(req *http.Request) (resp *http.Response, err error) {
+		var ctx = req.Context()
+		var logger = log.LoggerFromContext(ctx)
+		var tracer = opentracing.GlobalTracer()
+
+		var parentSpan opentracing.Span
+		var childSpan opentracing.Span
+
+		defer func() {
+			if childSpan != nil {
+				opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
+				childSpan.Finish()
+			}
+		}()
+
+		if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+			childSpan = parentSpan.Tracer().StartSpan(
+				fmt.Sprintf("[%s] %s", req.Method, req.URL.Path),
+				opentracing.ChildOf(parentSpan.Context()),
+				opentracingext.SpanKindRPCClient,
+			)
+			ctx = opentracing.ContextWithSpan(ctx, childSpan)
+		}
+
+		kitopentracing.ContextToHTTP(tracer, logger)(ctx, req)
+		resp, err = next.RoundTrip(req)
+		return
+	})
+}
+
+// RoundTripperLoggingMiddleware ...
+func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
+	return RoundTripperFunc(func(req *http.Request) (resp *http.Response, err error) {
 		ctx := req.Context()
 
 		var reqBodyBytes = make([]byte, 0)
@@ -98,39 +177,7 @@ func HTTPClientLoggingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
 				"resp", respBody, "status", resp.StatusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 		}(time.Now())
 
-		resp, err = next.Do(req)
-		return
-	})
-}
-
-// HTTPClientTracingMiddleware ...
-func HTTPClientTracingMiddleware(next kithttp.HTTPClient) kithttp.HTTPClient {
-	return HTTPClientDoFunc(func(req *http.Request) (resp *http.Response, err error) {
-		var ctx = req.Context()
-		var logger = log.LoggerFromContext(ctx)
-		var tracer = opentracing.GlobalTracer()
-
-		var parentSpan opentracing.Span
-		var childSpan opentracing.Span
-
-		defer func() {
-			if childSpan != nil {
-				opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
-				childSpan.Finish()
-			}
-		}()
-
-		if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
-			childSpan = parentSpan.Tracer().StartSpan(
-				fmt.Sprintf("[%s] %s", req.Method, req.URL.Path),
-				opentracing.ChildOf(parentSpan.Context()),
-				opentracingext.SpanKindRPCClient,
-			)
-			ctx = opentracing.ContextWithSpan(ctx, childSpan)
-		}
-
-		kitopentracing.ContextToHTTP(tracer, logger)(ctx, req)
-		resp, err = next.Do(req)
+		resp, err = next.RoundTrip(req)
 		return
 	})
 }

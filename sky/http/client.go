@@ -30,34 +30,20 @@ func InitClient(ctx context.Context, cfs []config.Client) {
 	for _, cf := range cfs {
 		clientConfig[cf.Name] = cf
 
-		var tr http.RoundTripper
+		tr := NewRoundTripperFromConfig(cf.Transport)
+		tr.Use(RoundTripperTracingMiddleware)
+		tr.Use(RoundTripperLoggingMiddleware)
 
-		var unit = time.Second
-		if cf.MillSecUnit {
-			unit = time.Millisecond
+		var timeout time.Duration
+		if cf.Timeout > 0 {
+			timeout = cf.Timeout * time.Second
 		}
-
-		if cf.CustomTranport {
-			tr = &http.Transport{
-				MaxConnsPerHost:     cf.Transport.MaxConnsPerHost,
-				MaxIdleConns:        cf.Transport.MaxIdleConns,
-				MaxIdleConnsPerHost: cf.Transport.MaxIdleConnsPerHost,
-
-				IdleConnTimeout:       cf.Transport.IdleConnTimeout * unit,
-				TLSHandshakeTimeout:   cf.Transport.TLSHandshakeTimeout * unit,
-				ExpectContinueTimeout: cf.Transport.ExpectContinueTimeout * unit,
-				ResponseHeaderTimeout: cf.Transport.ResponseHeaderTimeout * unit,
-
-				DisableKeepAlives:  cf.Transport.DisableKeepAlives,
-				DisableCompression: cf.Transport.DisableCompression,
-			}
-		} else {
-			tr = http.DefaultTransport
+		if cf.TimeoutMillSec > 0 {
+			timeout = cf.TimeoutMillSec * time.Millisecond
 		}
-
 		cl := &http.Client{
 			Transport: tr,
-			Timeout:   cf.Timeout * unit,
+			Timeout:   timeout,
 		}
 		clientMap[cf.Name] = cl
 	}
@@ -94,14 +80,8 @@ func NewClient(
 		return nil, err
 	}
 
-	client := HTTPClient{
-		Client: cl,
-	}
-	client.Use(HTTPClientTracingMiddleware)
-	client.Use(HTTPClientLoggingMiddleware)
-
 	options := []kithttp.ClientOption{
-		kithttp.SetClient(client),
+		kithttp.SetClient(cl),
 	}
 
 	if opt != nil {
@@ -134,7 +114,5 @@ func NewClient(
 // Endpoint ...
 func (c Client) Endpoint() kitendpoint.Endpoint {
 	e := c.Client.Endpoint()
-	// e = opentracing.TraceClient(otTracer, "Sum")(e)
-
 	return e
 }

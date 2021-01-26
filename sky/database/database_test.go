@@ -1,4 +1,4 @@
-package sql
+package database
 
 import (
 	"context"
@@ -10,17 +10,21 @@ import (
 	"github.com/WiFeng/go-sky/sky/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	_ "github.com/go-sql-driver/mysql"
 )
+
+var testName = "db1"
 
 func TestMain(m *testing.M) {
 	dbConf := []config.DB{
 		{
-			Name: "db1",
+			Name: testName,
 			Host: "127.0.0.1",
 			DB:   "test",
 			Port: 3306,
 			User: "root",
-			Pass: "",
+			Pass: "123456",
 		},
 	}
 
@@ -40,14 +44,14 @@ func TestMain(m *testing.M) {
 
 func TestSelect(t *testing.T) {
 	var ctx = context.Background()
-	db, err := GetInstance(ctx, "db11")
+	db, err := GetInstance(ctx, testName)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	var got string
-	err = db.QueryRowContext(ctx, "SELECT OK").Scan(&got)
+	err = db.QueryRowContext(ctx, "SELECT 'OK'").Scan(&got)
 	if err != nil {
 		t.Error(err)
 		return

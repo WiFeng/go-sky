@@ -1,4 +1,4 @@
-package sql
+package database
 
 import (
 	"context"
@@ -7,9 +7,8 @@ import (
 	"fmt"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	skysql "github.com/WiFeng/go-sky/sky/database/sql"
 	"github.com/WiFeng/go-sky/sky/log"
-
-	_ "github.com/go-sql-driver/mysql" // mysql
 )
 
 var (
@@ -38,7 +37,8 @@ func Init(ctx context.Context, cfs []config.DB) {
 				cf.Charset = "utf8mb4"
 			}
 
-			if db, err = sql.Open(cf.Driver, fmt.Sprintf("%s:%s@/%s?charset=%s", cf.User, cf.Pass, cf.DB, cf.Charset)); err != nil {
+			driverName := skysql.Register(cf.Driver)
+			if db, err = sql.Open(driverName, fmt.Sprintf("%s:%s@/%s?charset=%s", cf.User, cf.Pass, cf.DB, cf.Charset)); err != nil {
 				log.Fatalw(ctx, "database open error", "conf", cf, "err", err)
 				continue
 			}

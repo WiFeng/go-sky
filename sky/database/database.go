@@ -58,7 +58,7 @@ func GetInstance(ctx context.Context, instanceName string) (*sql.DB, error) {
 	db, ok := dbMap[instanceName]
 	if !ok {
 		err := ErrConfigNotFound
-		log.Errorw(ctx, "redis.GetInstance, instanceName is not in dbMap map", "instance_name", instanceName, "err", err)
+		log.Errorw(ctx, "database.GetInstance, instanceName is not in dbMap map", "instance_name", instanceName, "err", err)
 		return nil, err
 	}
 	return db, nil

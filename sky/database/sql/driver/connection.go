@@ -63,7 +63,7 @@ func (c *conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 		}
 		if err != nil {
 			opentracingext.Error.Set(childSpan, true)
-			childSpan.SetTag("http.error", err.Error())
+			childSpan.SetTag("db.error", err.Error())
 			childSpan.Finish()
 			return
 		}
@@ -74,6 +74,9 @@ func (c *conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 		childSpan = parentSpan.Tracer().StartSpan(
 			"sql.QueryContext",
 			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: "db.query", Value: query},
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
 			opentracingext.SpanKindRPCClient,
 		)
 	}

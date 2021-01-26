@@ -19,6 +19,7 @@ import (
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 
+	skydb "github.com/WiFeng/go-sky/sky/database"
 	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
 	skyhttp "github.com/WiFeng/go-sky/sky/http"
 	skykafka "github.com/WiFeng/go-sky/sky/kafka"
@@ -110,6 +111,11 @@ func init() {
 	// Initialize kafka
 	{
 		skykafka.Init(context.Background(), globalConfig.Kafka)
+	}
+
+	// Initialize database
+	{
+		skydb.Init(context.Background(), globalConfig.Database)
 	}
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)

@@ -13,7 +13,7 @@ import (
 
 var (
 	dbMap    = map[string]*sql.DB{}
-	dbConfig = map[string]config.DB{}
+	dbConfig = map[string]config.Database{}
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, cfs []config.DB) {
+func Init(ctx context.Context, cfs []config.Database) {
 
 	for _, cf := range cfs {
 		dbConfig[cf.Name] = cf

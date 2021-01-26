@@ -17,7 +17,7 @@ import (
 var testName = "db1"
 
 func TestMain(m *testing.M) {
-	dbConf := []config.DB{
+	dbConf := []config.Database{
 		{
 			Name: testName,
 			Host: "127.0.0.1",

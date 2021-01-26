@@ -10,7 +10,7 @@ import (
 type Config struct {
 	Server        Server
 	Redis         []Redis
-	DB            []DB
+	Database      []Database
 	Client        []Client
 	Elasticsearch []Elasticsearch
 	Kafka         []Kafka

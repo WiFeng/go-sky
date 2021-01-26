@@ -1,7 +1,7 @@
 package config
 
-// DB config ...
-type DB struct {
+// Database config ...
+type Database struct {
 	Name    string
 	Driver  string
 	Host    string

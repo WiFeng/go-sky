@@ -4,11 +4,16 @@ import (
 	"context"
 	"database/sql/driver"
 	"errors"
+
+	"github.com/opentracing/opentracing-go"
+	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
 
 var (
 	// ErrDeprecatedMethod ...
 	ErrDeprecatedMethod = errors.New("sql deprecated method")
+	// ErrUnsupportedMethod ...
+	ErrUnsupportedMethod = errors.New("sql unsupported method")
 )
 
 // Conn ...
@@ -47,11 +52,39 @@ func (c *conn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, e
 	return nil, nil
 }
 
-func (c *conn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
-	if queryer, ok := c.base.(driver.QueryerContext); ok {
-		return queryer.QueryContext(ctx, query, args)
+func (c *conn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("http.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.QueryContext",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracingext.SpanKindRPCClient,
+		)
 	}
-	return nil, nil
+
+	// ============================================
+	queryer, ok := c.base.(driver.QueryerContext)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	rows, err = queryer.QueryContext(ctx, query, args)
+	return
 }
 
 func (c *conn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {

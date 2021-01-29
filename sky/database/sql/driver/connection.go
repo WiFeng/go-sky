@@ -39,17 +39,77 @@ func (c *conn) Close() error {
 }
 
 func (c *conn) Ping(ctx context.Context) (err error) {
-	if pinger, ok := c.base.(driver.Pinger); ok {
-		return pinger.Ping(ctx)
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.Ping",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
-	return nil
+
+	// ============================================
+	pinger, ok := c.base.(driver.Pinger)
+	if !ok {
+		return ErrUnsupportedMethod
+	}
+	err = pinger.Ping(ctx)
+	return
 }
 
-func (c *conn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
-	if connBegin, ok := c.base.(driver.ConnBeginTx); ok {
-		return connBegin.BeginTx(ctx, opts)
+func (c *conn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx driver.Tx, err error) {
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.BeginTx",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
-	return nil, nil
+
+	// ============================================
+	connBegin, ok := c.base.(driver.ConnBeginTx)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	tx, err = connBegin.BeginTx(ctx, opts)
+	return
 }
 
 func (c *conn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
@@ -90,25 +150,85 @@ func (c *conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 	return
 }
 
-func (c *conn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
-	if execer, ok := c.base.(driver.ExecerContext); ok {
-		return execer.ExecContext(ctx, query, args)
+func (c *conn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (result driver.Result, err error) {
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.ExecContext",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: "db.query", Value: query},
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
-	return nil, nil
+
+	// ============================================
+	execer, ok := c.base.(driver.ExecerContext)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	result, err = execer.ExecContext(ctx, query, args)
+	return
 }
 
-func (c *conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
-	if connPrepare, ok := c.base.(driver.ConnPrepareContext); ok {
-		basestmt, err := connPrepare.PrepareContext(ctx, query)
+func (c *conn) PrepareContext(ctx context.Context, query string) (s driver.Stmt, err error) {
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
 		if err != nil {
-			return nil, err
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
 		}
-		stmt := &stmt{
-			base: basestmt,
-		}
-		return stmt, nil
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.PrepareContext",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: "db.query", Value: query},
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
-	return nil, nil
+
+	// ============================================
+	connPrepare, ok := c.base.(driver.ConnPrepareContext)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	basestmt, err := connPrepare.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	s = &stmt{
+		base: basestmt,
+	}
+	return
 }
 
 type stmt struct {
@@ -134,15 +254,75 @@ func (s *stmt) Exec(args []driver.Value) (driver.Result, error) {
 }
 
 func (s *stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
-	if queryer, ok := s.base.(driver.StmtQueryContext); ok {
-		return queryer.QueryContext(ctx, args)
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.stmt.QueryContext",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
+
+	// ============================================
+	queryer, ok := s.base.(driver.StmtQueryContext)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	rows, err = queryer.QueryContext(ctx, args)
 	return
 }
 
 func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (result driver.Result, err error) {
-	if execer, ok := s.base.(driver.StmtExecContext); ok {
-		return execer.ExecContext(ctx, args)
+
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	defer func() {
+		if childSpan == nil {
+			return
+		}
+		if err != nil {
+			opentracingext.Error.Set(childSpan, true)
+			childSpan.SetTag("db.error", err.Error())
+			childSpan.Finish()
+			return
+		}
+		childSpan.Finish()
+	}()
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		childSpan = parentSpan.Tracer().StartSpan(
+			"sql.stmt.ExecContext",
+			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
+			opentracingext.SpanKindRPCClient,
+		)
 	}
+
+	// ============================================
+	execer, ok := s.base.(driver.StmtExecContext)
+	if !ok {
+		return nil, ErrUnsupportedMethod
+	}
+	result, err = execer.ExecContext(ctx, args)
 	return
 }

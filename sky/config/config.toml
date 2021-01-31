@@ -11,6 +11,9 @@ name = "go.srv.demo"
 [server.http]
 addr = ":8080"
 
+[server.pprof]
+addr = ":8081"
+
 [server.log]
 level = "debug"
 development = true

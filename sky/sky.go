@@ -86,37 +86,14 @@ func init() {
 		// defer tracerCloser.Close()
 	}
 
-	// Initialize pprof
-	{
-		pprofHost := globalConfig.Server.PProf.Host
-		pporfPort := globalConfig.Server.PProf.Port
-		initPProf(context.Background(), pprofHost, pporfPort)
-	}
+	skydb.Init(context.Background(), globalConfig.Database)
+	skyredis.Init(context.Background(), globalConfig.Redis)
 
-	// Initialize client
-	{
-		skyhttp.InitClient(context.Background(), globalConfig.Client)
-	}
+	skyes.Init(context.Background(), globalConfig.Elasticsearch)
+	skykafka.Init(context.Background(), globalConfig.Kafka)
 
-	// Initialize redis
-	{
-		skyredis.Init(context.Background(), globalConfig.Redis)
-	}
-
-	// Initialize elasticsearch
-	{
-		skyes.Init(context.Background(), globalConfig.Elasticsearch)
-	}
-
-	// Initialize kafka
-	{
-		skykafka.Init(context.Background(), globalConfig.Kafka)
-	}
-
-	// Initialize database
-	{
-		skydb.Init(context.Background(), globalConfig.Database)
-	}
+	skyhttp.InitClient(context.Background(), globalConfig.Client)
+	skyhttp.InitPProf(context.Background(), globalConfig.Server.PProf)
 
 	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
 }
@@ -133,19 +110,6 @@ func initFlag() (*string, *string, error) {
 	err := fs.Parse(os.Args[1:])
 
 	return configDir, environment, err
-}
-
-func initPProf(ctx context.Context, host string, port int) {
-	if port < 1 {
-		return
-	}
-
-	go func() {
-		addr := fmt.Sprintf("%s:%d", host, port)
-		log.Infof(ctx, "Start HTTP PProf. http://%s", addr)
-		log.Fatal(ctx, http.ListenAndServe(addr, nil))
-	}()
-
 }
 
 func initTrace(serviceName string) (opentracing.Tracer, io.Closer, error) {

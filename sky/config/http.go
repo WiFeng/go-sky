@@ -9,8 +9,7 @@ type HTTP struct {
 
 // PProf ...
 type PProf struct {
-	Host string
-	Port int
+	Addr string
 }
 
 // Client ...

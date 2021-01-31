@@ -128,9 +128,13 @@ func ServerMetricsMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		defer func() {
-			skyprome.HTTPRequestsTotalCounterInc(iw.statusCode, r.Method, r.URL.Path)
-		}()
+		defer func(begin time.Time) {
+			duration := float64(time.Since(begin).Microseconds()) / 1000000
+
+			skyprome.HTTPRequestsTotalCounter(iw.statusCode, r.Method, r.URL.Path)
+			skyprome.HTTPRequestsDurationHistogram(duration)
+			skyprome.HTTPRequestsDurationSummary(duration)
+		}(time.Now())
 
 		next.ServeHTTP(iw, r)
 	})

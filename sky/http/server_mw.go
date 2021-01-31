@@ -8,36 +8,37 @@ import (
 	"time"
 
 	"github.com/WiFeng/go-sky/sky/log"
+	skyprome "github.com/WiFeng/go-sky/sky/metrics/prometheus"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
-	"github.com/opentracing/opentracing-go"
+	opentracing "github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"
 )
 
-// HTTPResponseWriter ...
-type HTTPResponseWriter struct {
+// ResponseWriter ...
+type ResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
 	reqBody    []byte
 	respBody   []byte
 }
 
-func (w *HTTPResponseWriter) Write(b []byte) (int, error) {
+func (w *ResponseWriter) Write(b []byte) (int, error) {
 	w.respBody = append(w.respBody, b...)
 	return w.ResponseWriter.Write(b)
 }
 
 // WriteHeader ...
-func (w *HTTPResponseWriter) WriteHeader(statusCode int) {
+func (w *ResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
 // ==========================================
-// HTTPServer Middleware
+// Server Middleware
 // ==========================================
 
-// HTTPServerLoggingMiddleware ...
-func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
+// ServerLoggingMiddleware ...
+func ServerLoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -50,7 +51,7 @@ func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
 		}
 
-		iw := &HTTPResponseWriter{
+		iw := &ResponseWriter{
 			w,
 			http.StatusOK,
 			reqBodyBytes,
@@ -83,8 +84,8 @@ func HTTPServerLoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// HTTPServerTracingMiddleware ...
-func HTTPServerTracingMiddleware(next http.Handler) http.Handler {
+// ServerTracingMiddleware ...
+func ServerTracingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
 		var logger = log.LoggerFromContext(ctx)
@@ -102,5 +103,35 @@ func HTTPServerTracingMiddleware(next http.Handler) http.Handler {
 		}()
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+// ServerMetricsMiddleware ...
+func ServerMetricsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		var iw *ResponseWriter
+		{
+			reqBodyBytes := make([]byte, 0)
+			respBodyBytes := make([]byte, 0)
+
+			if r.Body != nil {
+				reqBodyBytes, _ = ioutil.ReadAll(r.Body)
+			}
+			r.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
+
+			iw = &ResponseWriter{
+				w,
+				http.StatusOK,
+				reqBodyBytes,
+				respBodyBytes,
+			}
+		}
+
+		defer func() {
+			skyprome.HTTPRequestsTotalCounterInc(iw.statusCode, r.Method, r.URL.Path)
+		}()
+
+		next.ServeHTTP(iw, r)
 	})
 }

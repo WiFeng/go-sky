@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/metrics/prometheus"
 )
 
 // Init ...
 func Init(ctx context.Context, cfg config.Metrics) {
-	initPrometheus(ctx, cfg.Prometheus)
+	prometheus.Init(ctx, cfg.Prometheus)
 }

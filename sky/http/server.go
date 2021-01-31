@@ -62,8 +62,9 @@ func NewServer(
 // NewRouter ...
 func NewRouter() *mux.Router {
 	r := mux.NewRouter()
-	r.Use(HTTPServerTracingMiddleware)
-	r.Use(HTTPServerLoggingMiddleware)
+	r.Use(ServerMetricsMiddleware)
+	r.Use(ServerTracingMiddleware)
+	r.Use(ServerLoggingMiddleware)
 	return r
 }
 

@@ -1,4 +1,4 @@
-package metrics
+package prometheus
 
 import (
 	"context"
@@ -6,10 +6,12 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func initPrometheus(ctx context.Context, cfg config.Prometheus) {
+// Init ...
+func Init(ctx context.Context, cfg config.Prometheus) {
 	if cfg.Addr == "nil" {
 		return
 	}

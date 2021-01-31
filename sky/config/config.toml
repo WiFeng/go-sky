@@ -24,6 +24,9 @@ output_paths = ["stdout"]
 error_output_paths = ["stderr"]
 initial_fields = {}
 
+[server.metrics.prometheus]
+addr = ":8082"
+
 [[redis]]
 name = "redis1"
 host = "127.0.0.1"

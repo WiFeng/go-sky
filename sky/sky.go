@@ -23,6 +23,7 @@ import (
 	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
 	skyhttp "github.com/WiFeng/go-sky/sky/http"
 	skykafka "github.com/WiFeng/go-sky/sky/kafka"
+	skymetrics "github.com/WiFeng/go-sky/sky/metrics"
 	skyredis "github.com/WiFeng/go-sky/sky/redis"
 )
 
@@ -34,8 +35,11 @@ var (
 )
 
 func init() {
-	// Initialize flogs
+
 	var err error
+	var ctx = context.Background()
+
+	// Initialize flogs
 	var configDir *string
 	var environment *string
 	{
@@ -86,16 +90,15 @@ func init() {
 		// defer tracerCloser.Close()
 	}
 
-	skydb.Init(context.Background(), globalConfig.Database)
-	skyredis.Init(context.Background(), globalConfig.Redis)
+	skydb.Init(ctx, globalConfig.Database)
+	skyredis.Init(ctx, globalConfig.Redis)
+	skyes.Init(ctx, globalConfig.Elasticsearch)
+	skykafka.Init(ctx, globalConfig.Kafka)
+	skymetrics.Init(ctx, globalConfig.Server.Metrics)
+	skyhttp.InitClient(ctx, globalConfig.Client)
+	skyhttp.InitPProf(ctx, globalConfig.Server.PProf)
 
-	skyes.Init(context.Background(), globalConfig.Elasticsearch)
-	skykafka.Init(context.Background(), globalConfig.Kafka)
-
-	skyhttp.InitClient(context.Background(), globalConfig.Client)
-	skyhttp.InitPProf(context.Background(), globalConfig.Server.PProf)
-
-	log.Infow(context.Background(), "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
+	log.Infow(ctx, "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
 }
 
 func initFlag() (*string, *string, error) {

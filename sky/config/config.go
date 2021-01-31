@@ -18,10 +18,11 @@ type Config struct {
 
 // Server server config
 type Server struct {
-	Name  string
-	HTTP  HTTP
-	PProf PProf
-	Log   Log
+	Name    string
+	HTTP    HTTP
+	PProf   PProf
+	Metrics Metrics
+	Log     Log
 }
 
 // Init ...

@@ -8,16 +8,10 @@ import (
 	"net/http"
 	"os"
 	"text/tabwriter"
-	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go"
-	"github.com/uber/jaeger-lib/metrics/prometheus"
-
-	jaegerconfig "github.com/uber/jaeger-client-go/config"
-	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/WiFeng/go-sky/sky/trace"
 
 	skydb "github.com/WiFeng/go-sky/sky/database"
 	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
@@ -79,8 +73,7 @@ func init() {
 	// Initialize global tracer
 	{
 		var tracerCloser io.Closer
-		serivceName := globalConfig.Server.Name
-		if _, tracerCloser, err = initTrace(serivceName); err != nil {
+		if _, tracerCloser, err = trace.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Trace); err != nil {
 			fmt.Println("Init trace error. ", err)
 			os.Exit(1)
 		}
@@ -113,31 +106,6 @@ func initFlag() (*string, *string, error) {
 	err := fs.Parse(os.Args[1:])
 
 	return configDir, environment, err
-}
-
-func initTrace(serviceName string) (opentracing.Tracer, io.Closer, error) {
-	metricsFactory := prometheus.New()
-
-	//logger := log.GetDefaultLogger()
-	loggerOption := jaegerconfig.Logger(jaegerlog.DebugLogAdapter(jaeger.StdLogger))
-	tracer, tracerCloser, err := jaegerconfig.Configuration{
-		ServiceName: serviceName,
-		Sampler: &jaegerconfig.SamplerConfig{
-			Type:  "const",
-			Param: 1,
-		},
-		Reporter: &jaegerconfig.ReporterConfig{
-			// LogSpans:          true,
-			// CollectorEndpoint: "http://localhost:14268/api/traces",
-			LocalAgentHostPort:  "localhost:6831",
-			BufferFlushInterval: time.Second * 1,
-		},
-	}.NewTracer(
-		jaegerconfig.Metrics(metricsFactory),
-		loggerOption,
-	)
-	opentracing.InitGlobalTracer(tracer)
-	return tracer, tracerCloser, err
 }
 
 func usageFor(fs *flag.FlagSet, short string) func() {

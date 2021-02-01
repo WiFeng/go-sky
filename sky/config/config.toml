@@ -24,6 +24,11 @@ output_paths = ["stdout"]
 error_output_paths = ["stderr"]
 initial_fields = {}
 
+[server.trace.reporter]
+# CollectorEndpoint = ""
+# LocalAgentHostPort = ""
+# BufferFlushInterval = 1
+
 [server.metrics.prometheus]
 addr = ":8082"
 # DisableHTTPRequestsTotalCounter = false

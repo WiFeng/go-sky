@@ -22,6 +22,7 @@ type Server struct {
 	HTTP    HTTP
 	PProf   PProf
 	Metrics Metrics
+	Trace   Trace
 	Log     Log
 }
 

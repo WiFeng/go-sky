@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/uber/jaeger-client-go"
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 
 	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-lib/metrics/prometheus"
 )
 
@@ -18,8 +18,9 @@ import (
 func Init(ctx context.Context, serviceName string, cfg config.Trace) (opentracing.Tracer, io.Closer, error) {
 	metricsFactory := prometheus.New()
 
-	//logger := log.GetDefaultLogger()
-	loggerOption := jaegerconfig.Logger(jaegerlog.DebugLogAdapter(jaeger.StdLogger))
+	logger := jaeger.StdLogger
+	// logger := log.GetDefaultLogger()
+	loggerOption := jaegerconfig.Logger(jaegerlog.DebugLogAdapter(logger))
 	tracer, tracerCloser, err := jaegerconfig.Configuration{
 		ServiceName: serviceName,
 		Sampler: &jaegerconfig.SamplerConfig{

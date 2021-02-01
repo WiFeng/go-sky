@@ -14,23 +14,27 @@ var (
 		[]string{"code", "method", "path"},
 	)
 
-	httpRequestsDurationHistogram = prometheus.NewHistogram(
+	httpRequestsDurationHistogram = promauto.NewHistogram(
 		prometheus.HistogramOpts{
-			Name: "http_request_duration_seconds_histogram",
-			Help: "A histogram of latencies for requests.",
-			//Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
+			Name:    "http_request_duration_seconds_histogram",
+			Help:    "A histogram of latencies for requests.",
+			Buckets: promecfg.HTTPRequestsDurationHistogramBuckets,
 		},
 	)
 
-	httpRequestsDurationSummary = prometheus.NewSummary(prometheus.SummaryOpts{
+	httpRequestsDurationSummary = promauto.NewSummary(prometheus.SummaryOpts{
 		Name:       "http_request_duration_seconds_summary",
 		Help:       "A summary of latencies for requests.",
-		Objectives: map[float64]float64{0.5: 0.05, 0.8: 0.001, 0.9: 0.01, 0.95: 0.01},
+		Objectives: promecfg.HTTPRequestsDurationSummaryObjectives,
 	})
 )
 
 // HTTPRequestsTotalCounter ...
 func HTTPRequestsTotalCounter(code int, method string, path string) {
+	if promecfg.DisableHTTPRequestsTotalCounter {
+		return
+	}
+
 	labels := prometheus.Labels{
 		"code":   sanitizeCode(code),
 		"method": sanitizeMethod(method),
@@ -41,10 +45,18 @@ func HTTPRequestsTotalCounter(code int, method string, path string) {
 
 // HTTPRequestsDurationHistogram ...
 func HTTPRequestsDurationHistogram(duration float64) {
+	if promecfg.DisableHTTPRequestsDurationHistogram {
+		return
+	}
+
 	httpRequestsDurationHistogram.Observe(duration)
 }
 
 // HTTPRequestsDurationSummary ...
 func HTTPRequestsDurationSummary(duration float64) {
+	if promecfg.DisableHTTPRequestsDurationSummary {
+		return
+	}
+
 	httpRequestsDurationSummary.Observe(duration)
 }

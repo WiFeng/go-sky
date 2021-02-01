@@ -26,6 +26,10 @@ initial_fields = {}
 
 [server.metrics.prometheus]
 addr = ":8082"
+# DisableHTTPRequestsTotalCounter = false
+# DisableHTTPRequestsDurationHistogram = false
+# DisableHTTPRequestsDurationSummary = true
+
 
 [[redis]]
 name = "redis1"

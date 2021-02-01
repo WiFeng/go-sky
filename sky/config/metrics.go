@@ -8,4 +8,11 @@ type Metrics struct {
 // Prometheus ...
 type Prometheus struct {
 	Addr string
+
+	DisableHTTPRequestsTotalCounter      bool
+	DisableHTTPRequestsDurationHistogram bool
+	DisableHTTPRequestsDurationSummary   bool
+
+	HTTPRequestsDurationHistogramBuckets  []float64
+	HTTPRequestsDurationSummaryObjectives map[float64]float64
 }

@@ -22,10 +22,12 @@ import (
 )
 
 var (
-	globalConfig      config.Config
 	globalConfigDir   string
 	globalConfigFile  string
 	globalEnvironment string
+
+	globalConfig    config.Config
+	globalDeferFunc []func()
 )
 
 func init() {
@@ -58,16 +60,16 @@ func init() {
 	}
 
 	// Initialzie logger
+	var logger log.Logger
 	{
-		var logger log.Logger
 		if logger, err = log.Init(globalConfig.Server.Log); err != nil {
 			fmt.Println("Init logger error. ", err)
 			os.Exit(1)
 		}
-		_ = logger
 
-		// TODO:
-		// defer logger.Sync()
+		appendDeferFunc(func() {
+			logger.Sync()
+		})
 	}
 
 	// Initialize global tracer
@@ -78,9 +80,9 @@ func init() {
 			os.Exit(1)
 		}
 
-		// TODO:
-		_ = tracerCloser
-		// defer tracerCloser.Close()
+		appendDeferFunc(func() {
+			tracerCloser.Close()
+		})
 	}
 
 	skydb.Init(ctx, globalConfig.Database)
@@ -123,6 +125,16 @@ func usageFor(fs *flag.FlagSet, short string) func() {
 	}
 }
 
+func appendDeferFunc(f func()) {
+	globalDeferFunc = append(globalDeferFunc, f)
+}
+
+func handleDeferFunc() {
+	for _, f := range globalDeferFunc {
+		f()
+	}
+}
+
 // LoadConfig ...
 func LoadConfig(name string, conf interface{}) (err error) {
 	var confFile string
@@ -142,8 +154,11 @@ func LoadAppConfig(conf interface{}) error {
 
 // RunHTTPServer ...
 func RunHTTPServer(handler http.Handler) {
-	httpConfig := globalConfig.Server.HTTP
-	skyhttp.ListenAndServe(context.Background(), httpConfig, handler)
+	// listen
+	skyhttp.ListenAndServe(context.Background(), globalConfig.Server.HTTP, handler)
+
+	// do something of the clearup
+	handleDeferFunc()
 }
 
 // Run ...

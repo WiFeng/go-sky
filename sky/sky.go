@@ -4,12 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"text/tabwriter"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/helper"
 	"github.com/WiFeng/go-sky/sky/log"
 	"github.com/WiFeng/go-sky/sky/trace"
 
@@ -26,8 +26,7 @@ var (
 	globalConfigFile  string
 	globalEnvironment string
 
-	globalConfig    config.Config
-	globalDeferFunc []func()
+	globalConfig config.Config
 )
 
 func init() {
@@ -59,32 +58,11 @@ func init() {
 		globalConfigFile = confFile
 	}
 
-	// Initialzie logger
-	var logger log.Logger
-	{
-		if logger, err = log.Init(globalConfig.Server.Log); err != nil {
-			fmt.Println("Init logger error. ", err)
-			os.Exit(1)
-		}
+	// Initialzie logger and trace
+	log.Init(ctx, globalConfig.Server.Log)
+	trace.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Trace)
 
-		appendDeferFunc(func() {
-			logger.Sync()
-		})
-	}
-
-	// Initialize global tracer
-	{
-		var tracerCloser io.Closer
-		if _, tracerCloser, err = trace.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Trace); err != nil {
-			fmt.Println("Init trace error. ", err)
-			os.Exit(1)
-		}
-
-		appendDeferFunc(func() {
-			tracerCloser.Close()
-		})
-	}
-
+	// Initialzie supported components
 	skydb.Init(ctx, globalConfig.Database)
 	skyredis.Init(ctx, globalConfig.Redis)
 	skyes.Init(ctx, globalConfig.Elasticsearch)
@@ -125,16 +103,6 @@ func usageFor(fs *flag.FlagSet, short string) func() {
 	}
 }
 
-func appendDeferFunc(f func()) {
-	globalDeferFunc = append(globalDeferFunc, f)
-}
-
-func handleDeferFunc() {
-	for _, f := range globalDeferFunc {
-		f()
-	}
-}
-
 // LoadConfig ...
 func LoadConfig(name string, conf interface{}) (err error) {
 	var confFile string
@@ -158,7 +126,7 @@ func RunHTTPServer(handler http.Handler) {
 	skyhttp.ListenAndServe(context.Background(), globalConfig.Server.HTTP, handler)
 
 	// do something of the clearup
-	handleDeferFunc()
+	helper.RunDeferFunc()
 }
 
 // Run ...

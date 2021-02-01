@@ -2,8 +2,11 @@ package log
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/helper"
 	"github.com/opentracing/opentracing-go"
 	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
@@ -62,14 +65,20 @@ var (
 )
 
 // Init ...
-func Init(logConf config.Log) (Logger, error) {
-	logger, err := NewLogger(logConf)
+func Init(ctx context.Context, logConf config.Log) (logger Logger, err error) {
+	logger, err = NewLogger(logConf)
 	if err != nil {
-		return logger, err
+		fmt.Println("Init logger error. ", err)
+		os.Exit(1)
+		return
 	}
 
 	SetDefaultLogger(logger)
-	return logger, nil
+	helper.AddDeferFunc(func() {
+		logger.Sync()
+	})
+
+	return
 }
 
 // GetDefaultLogger return default logger

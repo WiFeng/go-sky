@@ -2,10 +2,12 @@ package trace
 
 import (
 	"context"
-	"io"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/sky/helper"
 	"github.com/uber/jaeger-client-go"
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
@@ -15,7 +17,7 @@ import (
 )
 
 // Init ...
-func Init(ctx context.Context, serviceName string, cfg config.Trace) (opentracing.Tracer, io.Closer, error) {
+func Init(ctx context.Context, serviceName string, cfg config.Trace) {
 	metricsFactory := prometheus.New()
 
 	logger := jaeger.StdLogger
@@ -39,6 +41,16 @@ func Init(ctx context.Context, serviceName string, cfg config.Trace) (opentracin
 		jaegerconfig.Metrics(metricsFactory),
 		loggerOption,
 	)
+
+	if err != nil {
+		fmt.Println("Init trace error. ", err)
+		os.Exit(1)
+		return
+	}
+
 	opentracing.InitGlobalTracer(tracer)
-	return tracer, tracerCloser, err
+	helper.AddDeferFunc(func() {
+		tracerCloser.Close()
+	})
+
 }

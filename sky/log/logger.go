@@ -95,12 +95,25 @@ func SetDefaultLogger(logg Logger) {
 
 // NewLogger new Logger
 func NewLogger(cfg config.Log) (Logger, error) {
-	return newLogger(cfg)
+	var filename string
+	var enableStdout bool
+
+	filename = "runtime.log"
+	if cfg.OutputPath != "" {
+		filename = cfg.OutputPath
+	}
+
+	enableStdout = false
+	if cfg.Development {
+		enableStdout = true
+	}
+
+	return newLogger(cfg, filename, enableStdout)
 }
 
-func newLogger(cfg config.Log) (Logger, error) {
+func newLogger(cfg config.Log, filename string, enableStdout bool) (Logger, error) {
 	writeSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   cfg.OutputPath,
+		Filename:   filename,
 		MaxSize:    cfg.Rotate.MaxSize,
 		MaxBackups: cfg.Rotate.MaxBackups,
 		MaxAge:     cfg.Rotate.MaxAge,
@@ -121,6 +134,17 @@ func newLogger(cfg config.Log) (Logger, error) {
 		writeSyncer,
 		levelEnabler,
 	)
+
+	if enableStdout {
+		stdoutWriteSyncer, _, _ := zap.Open("stdout")
+		stdoutCore := zapcore.NewCore(
+			zapcore.NewJSONEncoder(NewZapEncoderConfig()),
+			stdoutWriteSyncer,
+			levelEnabler,
+		)
+		core = zapcore.NewTee(core, stdoutCore)
+	}
+
 	logger := logger{
 		zap.New(core, options...).Sugar(),
 	}

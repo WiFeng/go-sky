@@ -9,11 +9,12 @@ import (
 // NewZapEncoderConfig ...
 func NewZapEncoderConfig() zapcore.EncoderConfig {
 	return zapcore.EncoderConfig{
-		TimeKey:       "time",
-		LevelKey:      "level",
-		NameKey:       "logger",
-		CallerKey:     "caller",
-		FunctionKey:   zapcore.OmitKey,
+		TimeKey:     "time",
+		LevelKey:    "level",
+		NameKey:     "logger",
+		CallerKey:   "caller",
+		FunctionKey: zapcore.OmitKey,
+		// FunctionKey:   "func",
 		MessageKey:    "msg",
 		StacktraceKey: "stacktrace",
 		LineEnding:    zapcore.DefaultLineEnding,

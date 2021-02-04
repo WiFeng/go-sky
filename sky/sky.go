@@ -75,7 +75,7 @@ func init() {
 }
 
 func initFlag() (*string, *string, error) {
-	fs := flag.NewFlagSet("short-url", flag.ExitOnError)
+	fs := flag.NewFlagSet("go-sky", flag.ExitOnError)
 
 	var (
 		configDir   = fs.String("conf", "./conf/", "Config Directory")

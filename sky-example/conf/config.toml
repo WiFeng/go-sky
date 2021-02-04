@@ -1,0 +1,5 @@
+[server]
+name = "sky.example"
+
+[server.http]
+addr = ":7030"

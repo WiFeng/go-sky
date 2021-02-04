@@ -1,0 +1,5 @@
+[server]
+name = "sky.helloworld"
+
+[server.http]
+addr = ":7020"

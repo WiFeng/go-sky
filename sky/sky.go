@@ -79,7 +79,7 @@ func initFlag() (*string, *string, error) {
 
 	var (
 		configDir   = fs.String("conf", "./conf/", "Config Directory")
-		environment = fs.String("env", "development", "Runing environment")
+		environment = fs.String("env", "", "Runing environment")
 	)
 
 	fs.Usage = usageFor(fs, os.Args[0]+" [flags]")

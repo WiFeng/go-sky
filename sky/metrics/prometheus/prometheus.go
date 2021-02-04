@@ -18,7 +18,7 @@ var (
 
 // Init ...
 func Init(ctx context.Context, cfg config.Prometheus) {
-	if cfg.Addr == "nil" {
+	if cfg.Addr == "" {
 		return
 	}
 

@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -26,36 +27,6 @@ func (r RoundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 type RoundTripper struct {
 	base        http.RoundTripper
 	middlewares []RoundTripperMiddleware
-}
-
-// NewTransport ...
-func NewTransport(cf config.HTTPTransport) *http.Transport {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-
-	if !cf.Customized {
-		return tr
-	}
-
-	unit := time.Second
-	if cf.MillSecUnit {
-		unit = time.Millisecond
-	}
-
-	tr = &http.Transport{
-		MaxConnsPerHost:     cf.MaxConnsPerHost,
-		MaxIdleConns:        cf.MaxIdleConns,
-		MaxIdleConnsPerHost: cf.MaxIdleConnsPerHost,
-
-		IdleConnTimeout:       cf.IdleConnTimeout * unit,
-		TLSHandshakeTimeout:   cf.TLSHandshakeTimeout * unit,
-		ExpectContinueTimeout: cf.ExpectContinueTimeout * unit,
-		ResponseHeaderTimeout: cf.ResponseHeaderTimeout * unit,
-
-		DisableKeepAlives:  cf.DisableKeepAlives,
-		DisableCompression: cf.DisableCompression,
-	}
-
-	return tr
 }
 
 // NewRoundTripper ...
@@ -102,6 +73,60 @@ type RoundTripperMiddlewareFunc func(http.RoundTripper) http.RoundTripper
 // Middleware allows MiddlewareFunc to implement the middleware interface.
 func (mw RoundTripperMiddlewareFunc) Middleware(roundTripper http.RoundTripper) http.RoundTripper {
 	return mw(roundTripper)
+}
+
+// NewTransport ...
+func NewTransport(cf config.HTTPTransport) *http.Transport {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+
+	if !cf.Customized {
+		return tr
+	}
+
+	unit := time.Second
+	if cf.MillSecUnit {
+		unit = time.Millisecond
+	}
+
+	tr = &http.Transport{
+		MaxConnsPerHost:     cf.MaxConnsPerHost,
+		MaxIdleConns:        cf.MaxIdleConns,
+		MaxIdleConnsPerHost: cf.MaxIdleConnsPerHost,
+
+		IdleConnTimeout:       cf.IdleConnTimeout * unit,
+		TLSHandshakeTimeout:   cf.TLSHandshakeTimeout * unit,
+		ExpectContinueTimeout: cf.ExpectContinueTimeout * unit,
+		ResponseHeaderTimeout: cf.ResponseHeaderTimeout * unit,
+
+		DisableKeepAlives:  cf.DisableKeepAlives,
+		DisableCompression: cf.DisableCompression,
+	}
+
+	return tr
+}
+
+type wapperBody struct {
+	base  io.ReadCloser
+	buff  io.ReadCloser
+	bytes []byte
+}
+
+func newWapperBody(base io.ReadCloser) *wapperBody {
+	bodyBytes, _ := ioutil.ReadAll(base)
+	bodyBuffer := ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	return &wapperBody{
+		base:  base,
+		buff:  bodyBuffer,
+		bytes: bodyBytes,
+	}
+}
+
+func (b *wapperBody) Read(p []byte) (n int, err error) {
+	return b.buff.Read(p)
+}
+
+func (b *wapperBody) Close() error {
+	return b.base.Close()
 }
 
 // ==========================================
@@ -159,8 +184,10 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 		var respBodyBytes = make([]byte, 0)
 
 		if req.Body != nil {
-			reqBodyBytes, _ = ioutil.ReadAll(req.Body)
-			req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBodyBytes))
+			body := newWapperBody(req.Body)
+			reqBodyBytes = body.bytes
+
+			req.Body = body
 		}
 
 		defer func(begin time.Time) {
@@ -171,8 +198,12 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 			if resp != nil {
 				respStatus = resp.StatusCode
 				if resp.Body != nil {
-					respBodyBytes, _ = ioutil.ReadAll(resp.Body)
-					resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
+					// respBodyBytes, _ = ioutil.ReadAll(resp.Body)
+					// resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
+
+					body := newWapperBody(req.Body)
+					reqBodyBytes = body.bytes
+					req.Body = body
 				}
 			}
 

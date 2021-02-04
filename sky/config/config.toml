@@ -17,12 +17,7 @@ addr = ":8081"
 [server.log]
 level = "debug"
 development = true
-disable_caller = false
-disable_stacktrace = false
-encoding = "json"
-output_paths = ["stdout"]
-error_output_paths = ["stderr"]
-initial_fields = {}
+outputPath = ""
 
 [server.trace.reporter]
 # CollectorEndpoint = ""

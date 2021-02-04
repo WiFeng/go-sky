@@ -10,6 +10,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -93,18 +95,34 @@ func SetDefaultLogger(logg Logger) {
 
 // NewLogger new Logger
 func NewLogger(logConf config.Log) (Logger, error) {
-	zapConf := config.NewZapConfig(logConf)
-	zapOptions := []zap.Option{
+	return newLogger(logConf)
+}
+
+func newLogger(logConf config.Log) (Logger, error) {
+	writer := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   logConf.OutputPath,
+		MaxSize:    500, // megabytes
+		MaxBackups: 3,
+		MaxAge:     28, // days
+	})
+	options := []zap.Option{
 		zap.AddCallerSkip(1),
 	}
-	zapLogger, err := zapConf.Build(zapOptions...)
+
+	levelEnabler, err := buildZapLevel(logConf.Level)
 	if err != nil {
 		return nil, err
 	}
 
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(NewZapEncoderConfig()),
+		writer,
+		levelEnabler,
+	)
 	logger := logger{
-		zapLogger.Sugar(),
+		zap.New(core, options...).Sugar(),
 	}
+
 	return logger, nil
 }
 

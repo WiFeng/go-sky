@@ -9,8 +9,6 @@ import (
 
 	"github.com/WiFeng/go-sky/sky/config"
 	"github.com/WiFeng/go-sky/sky/log"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func TestMain(m *testing.M) {
@@ -25,11 +23,9 @@ func TestMain(m *testing.M) {
 	}
 
 	logConf := config.Log{
-		Level:       zap.NewAtomicLevelAt(zapcore.InfoLevel),
-		Encoding:    "json",
-		OutputPaths: []string{"stdout"},
+		Level: "info",
 	}
-	if _, err := log.Init(logConf); err != nil {
+	if _, err := log.Init(context.Background(), logConf); err != nil {
 		fmt.Println("Error:", err)
 	}
 

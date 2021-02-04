@@ -11,7 +11,7 @@ import (
 	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
+	jacklog "gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -98,7 +98,7 @@ func NewLogger(cfg config.Log) (Logger, error) {
 	var filename string
 	var enableStdout bool
 
-	filename = "runtime.log"
+	filename = "./logs/runtime.log"
 	if cfg.OutputPath != "" {
 		filename = cfg.OutputPath
 	}
@@ -112,7 +112,7 @@ func NewLogger(cfg config.Log) (Logger, error) {
 }
 
 func newLogger(cfg config.Log, filename string, enableStdout bool) (Logger, error) {
-	writeSyncer := zapcore.AddSync(&lumberjack.Logger{
+	writeSyncer := zapcore.AddSync(&jacklog.Logger{
 		Filename:   filename,
 		MaxSize:    cfg.Rotate.MaxSize,
 		MaxBackups: cfg.Rotate.MaxBackups,

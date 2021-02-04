@@ -7,4 +7,15 @@ type Log struct {
 	DisableCaller     bool   `toml:"disableCaller"`
 	DisableStacktrace bool   `toml:"disableStacktrace"`
 	OutputPath        string `toml:"outputPath"`
+	Rotate            LogRotate
+}
+
+// LogRotate ...
+type LogRotate struct {
+	Filename   string
+	MaxSize    int // megabytes
+	MaxBackups int
+	MaxAge     int // days
+	LocalTime  bool
+	Compress   bool
 }

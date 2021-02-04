@@ -67,8 +67,8 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, logConf config.Log) (logger Logger, err error) {
-	logger, err = NewLogger(logConf)
+func Init(ctx context.Context, cfg config.Log) (logger Logger, err error) {
+	logger, err = NewLogger(cfg)
 	if err != nil {
 		fmt.Println("Init logger error. ", err)
 		os.Exit(1)
@@ -94,29 +94,31 @@ func SetDefaultLogger(logg Logger) {
 }
 
 // NewLogger new Logger
-func NewLogger(logConf config.Log) (Logger, error) {
-	return newLogger(logConf)
+func NewLogger(cfg config.Log) (Logger, error) {
+	return newLogger(cfg)
 }
 
-func newLogger(logConf config.Log) (Logger, error) {
-	writer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   logConf.OutputPath,
-		MaxSize:    500, // megabytes
-		MaxBackups: 3,
-		MaxAge:     28, // days
+func newLogger(cfg config.Log) (Logger, error) {
+	writeSyncer := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   cfg.OutputPath,
+		MaxSize:    cfg.Rotate.MaxSize,
+		MaxBackups: cfg.Rotate.MaxBackups,
+		MaxAge:     cfg.Rotate.MaxAge,
+		LocalTime:  cfg.Rotate.LocalTime,
+		Compress:   cfg.Rotate.Compress,
 	})
-	options := []zap.Option{
-		zap.AddCallerSkip(1),
-	}
 
-	levelEnabler, err := buildZapLevel(logConf.Level)
+	levelEnabler, err := buildZapLevel(cfg.Level)
 	if err != nil {
 		return nil, err
 	}
 
+	options := buildZapOptions(cfg)
+	options = append(options, zap.AddCallerSkip(1))
+
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(NewZapEncoderConfig()),
-		writer,
+		writeSyncer,
 		levelEnabler,
 	)
 	logger := logger{

@@ -1,4 +1,4 @@
-module github.com/WiFeng/go-sky/sky/sky-example
+module github.com/WiFeng/go-sky/sky-example
 
 go 1.13
 
@@ -6,8 +6,9 @@ replace github.com/WiFeng/go-sky/sky => /Users/leeco/go/src/github.com/WiFeng/go
 
 require (
 	github.com/Shopify/sarama v1.27.2 // indirect
-	github.com/WiFeng/go-sky/sky v0.0.0-00010101000000-000000000000 // indirect
+	github.com/WiFeng/go-sky/sky v0.0.0-00010101000000-000000000000
 	github.com/elastic/go-elasticsearch/v7 v7.10.0 // indirect
+	github.com/go-kit/kit v0.10.0
 	github.com/go-redis/redis/v8 v8.5.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect

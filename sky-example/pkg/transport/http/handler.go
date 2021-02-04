@@ -12,8 +12,8 @@ import (
 func NewHandler(endpoints endpoint.Endpoints) http.Handler {
 	r := skyhttp.NewRouter()
 
-	r.Methods(http.MethodGet).Path("/hello/say").Handler(skyhttp.NewServer(
-		endpoints.Hello.Say,
+	r.Methods(http.MethodGet).Path("/example/echo").Handler(skyhttp.NewServer(
+		endpoints.Example.Echo,
 		decodeHTTPExampleEchoRequest,
 		encodeHTTPGenericResponse,
 	))

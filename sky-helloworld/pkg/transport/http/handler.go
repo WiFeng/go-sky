@@ -18,5 +18,11 @@ func NewHandler(endpoints endpoint.Endpoints) http.Handler {
 		encodeHTTPGenericResponse,
 	))
 
+	r.Methods(http.MethodGet).Path("/hello/say2").Handler(skyhttp.NewServer(
+		endpoints.Hello.Say2,
+		decodeHTTPHelloSayRequest,
+		encodeHTTPGenericResponse,
+	))
+
 	return r
 }

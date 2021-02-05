@@ -3,3 +3,8 @@ name = "sky.helloworld"
 
 [server.http]
 addr = ":7020"
+
+[[redis]]
+name = "rdb"
+host = "127.0.0.1"
+port = 6379

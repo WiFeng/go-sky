@@ -105,7 +105,7 @@ func (s ExampleService) Trace(ctx context.Context, req ExampleEchoRequest) (inte
 	rpcReq := helloworld.HelloSayRequest{
 		Words: "Ememem",
 	}
-	rpcResp, err := helloworld.NewHello().Say(ctx, rpcReq)
+	rpcResp, err := helloworld.NewHello().Say2(ctx, rpcReq)
 	if err != nil {
 		return nil, err
 	}

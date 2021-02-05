@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	helloSayURI = "/hello/say"
+	helloSayURI  = "/hello/say"
+	helloSay2URI = "/hello/say2"
 )
 
 // HelloSayRequest ...
@@ -48,6 +49,29 @@ func (*Hello) Say(ctx context.Context, req HelloSayRequest) (HelloSayResponse, e
 	var resp HelloSayResponse
 
 	url := fmt.Sprintf("%s?words=%s", helloSayURI, req.Words)
+	cli, err := skyhttp.NewClient(ctx, serviceName, http.MethodGet, url,
+		encodeHTTPGenericRequest, decodeHelloSayResponse)
+	if err != nil {
+		return resp, err
+	}
+
+	result, err := cli.Endpoint()(ctx, req)
+
+	if err != nil {
+		log.Errorw(ctx, "hello.say.endpoint error", "err", err)
+		return resp, err
+	}
+
+	resp = result.(HelloSayResponse)
+	return resp, nil
+
+}
+
+// Say2 ...
+func (*Hello) Say2(ctx context.Context, req HelloSayRequest) (HelloSayResponse, error) {
+	var resp HelloSayResponse
+
+	url := fmt.Sprintf("%s?words=%s", helloSay2URI, req.Words)
 	cli, err := skyhttp.NewClient(ctx, serviceName, http.MethodGet, url,
 		encodeHTTPGenericRequest, decodeHelloSayResponse)
 	if err != nil {

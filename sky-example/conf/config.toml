@@ -4,9 +4,18 @@ name = "sky.example"
 [server.http]
 addr = ":7030"
 
+[server.pprof]
+addr = ":7031"
+
+[server.metrics.prometheus]
+addr = ":7032"
+disableHTTPRequestsTotalCounter = false
+disableHTTPRequestsDurationHistogram = false
+disableHTTPRequestsDurationSummary = true
+
 [server.log]
-level = "debug"
-development = true
+level = "info"
+#development = true
 
 [[redis]]
 name = "rdb"

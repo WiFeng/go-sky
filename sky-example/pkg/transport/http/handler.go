@@ -18,5 +18,17 @@ func NewHandler(endpoints endpoint.Endpoints) http.Handler {
 		encodeHTTPGenericResponse,
 	))
 
+	r.Methods(http.MethodGet).Path("/example/rpc").Handler(skyhttp.NewServer(
+		endpoints.Example.RPC,
+		decodeHTTPExampleEchoRequest,
+		encodeHTTPGenericResponse,
+	))
+
+	r.Methods(http.MethodGet).Path("/example/trace").Handler(skyhttp.NewServer(
+		endpoints.Example.Trace,
+		decodeHTTPExampleEchoRequest,
+		encodeHTTPGenericResponse,
+	))
+
 	return r
 }

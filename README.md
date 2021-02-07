@@ -11,7 +11,7 @@ go-sky is a Golang micro service framework integrating several very popular pack
 * github.com/Shopify/sarama
 * github.com/prometheus
 
-go-sky includes this subpackages. As follows:
+go-sky includes this subpackages as follows:
 
 * github.com/WiFeng/go-sky/sky/config
 * github.com/WiFeng/go-sky/sky/database
@@ -38,8 +38,8 @@ go-sky includes this subpackages. As follows:
 ## TODO
 
 1. Support redis/sql operation metric
-2. Support more custome config to make some function disabled.
+2. Support more custom config to make some function disabled.
 
 ## Feedback
 
-We need more cute members to make the project more robust. Believe you can!
+We need more cute members to make this project more robust. Believe you can!

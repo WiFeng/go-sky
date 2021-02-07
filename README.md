@@ -27,9 +27,10 @@ go-sky includes this subpackages as follows:
 ## Features
 
 1. Support config.toml, and load separated config file by different runtime enviroment (config_development.toml/config_production.toml)
-2. Support tracing (include http server and http client / redis / sql / kafka / elasticsearch)
-3. Support log rotating and include trace_id in all log items.
-4. Support promethues metric (include http server by now)
+2. Support many popular componets including sql/redis/kafka/elasticsearch.
+3. Support tracing (include http server and http client / redis / sql / kafka / elasticsearch)
+4. Support log rotating and include trace_id in all log items.
+5. Support promethues metric (include http server by now)
 
 ## Usage
 

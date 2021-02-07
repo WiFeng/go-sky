@@ -32,6 +32,9 @@ go-sky includes this subpackages as follows:
 4. Support log rotating and include trace_id in all log items.
 5. Support promethues metric (include http server by now)
 
+![image](https://user-images.githubusercontent.com/2247568/107139553-f7c63c80-6956-11eb-84d1-02e6864aa3f5.png)
+
+
 ## Usage
 
 1. There is a demo project in sky-example.

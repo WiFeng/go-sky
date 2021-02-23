@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 
 	_ "github.com/go-sql-driver/mysql"
 )

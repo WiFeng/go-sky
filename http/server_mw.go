@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/WiFeng/go-sky/sky/log"
-	skyprome "github.com/WiFeng/go-sky/sky/metrics/prometheus"
+	"github.com/WiFeng/go-sky/log"
+	skyprome "github.com/WiFeng/go-sky/metrics/prometheus"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	opentracing "github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"

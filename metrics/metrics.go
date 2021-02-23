@@ -3,8 +3,8 @@ package metrics
 import (
 	"context"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/metrics/prometheus"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/metrics/prometheus"
 )
 
 // Init ...

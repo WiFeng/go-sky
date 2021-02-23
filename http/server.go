@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 	"github.com/gorilla/mux"
 	"github.com/oklog/oklog/pkg/group"
 

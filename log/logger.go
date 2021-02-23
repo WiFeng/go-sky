@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/helper"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/helper"
 	"github.com/opentracing/opentracing-go"
 	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"

@@ -8,17 +8,17 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/helper"
-	"github.com/WiFeng/go-sky/sky/log"
-	"github.com/WiFeng/go-sky/sky/trace"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/helper"
+	"github.com/WiFeng/go-sky/log"
+	"github.com/WiFeng/go-sky/trace"
 
-	skydb "github.com/WiFeng/go-sky/sky/database"
-	skyes "github.com/WiFeng/go-sky/sky/elasticsearch"
-	skyhttp "github.com/WiFeng/go-sky/sky/http"
-	skykafka "github.com/WiFeng/go-sky/sky/kafka"
-	skymetrics "github.com/WiFeng/go-sky/sky/metrics"
-	skyredis "github.com/WiFeng/go-sky/sky/redis"
+	skydb "github.com/WiFeng/go-sky/database"
+	skyes "github.com/WiFeng/go-sky/elasticsearch"
+	skyhttp "github.com/WiFeng/go-sky/http"
+	skykafka "github.com/WiFeng/go-sky/kafka"
+	skymetrics "github.com/WiFeng/go-sky/metrics"
+	skyredis "github.com/WiFeng/go-sky/redis"
 )
 
 var (

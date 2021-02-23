@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	kafka "github.com/Shopify/sarama"
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 )
 
 var (

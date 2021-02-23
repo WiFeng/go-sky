@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 	"github.com/go-redis/redis/v8"
 )
 

@@ -13,16 +13,16 @@ go-sky is a Golang micro service framework integrating several very popular pack
 
 go-sky includes this subpackages as follows:
 
-* github.com/WiFeng/go-sky/sky/config
-* github.com/WiFeng/go-sky/sky/database
-* github.com/WiFeng/go-sky/sky/elasticsearch
-* github.com/WiFeng/go-sky/sky/helper
-* github.com/WiFeng/go-sky/sky/http
-* github.com/WiFeng/go-sky/sky/kafka
-* github.com/WiFeng/go-sky/sky/log
-* github.com/WiFeng/go-sky/sky/metrics
-* github.com/WiFeng/go-sky/sky/redis
-* github.com/WiFeng/go-sky/sky/trace
+* github.com/WiFeng/go-sky/config
+* github.com/WiFeng/go-sky/database
+* github.com/WiFeng/go-sky/elasticsearch
+* github.com/WiFeng/go-sky/helper
+* github.com/WiFeng/go-sky/http
+* github.com/WiFeng/go-sky/kafka
+* github.com/WiFeng/go-sky/log
+* github.com/WiFeng/go-sky/metrics
+* github.com/WiFeng/go-sky/redis
+* github.com/WiFeng/go-sky/trace
 
 ## Features
 

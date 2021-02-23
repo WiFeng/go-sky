@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/log"
 	kitendpoint "github.com/go-kit/kit/endpoint"
 )
 

@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/WiFeng/go-sky/sky/config"
+	"github.com/WiFeng/go-sky/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

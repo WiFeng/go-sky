@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"

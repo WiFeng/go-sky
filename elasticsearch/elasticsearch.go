@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	skyhttp "github.com/WiFeng/go-sky/sky/http"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	skyhttp "github.com/WiFeng/go-sky/http"
+	"github.com/WiFeng/go-sky/log"
 	"github.com/elastic/go-elasticsearch/v7"
 )
 

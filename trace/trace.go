@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/helper"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/helper"
 	"github.com/uber/jaeger-client-go"
 	jaegerconfig "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"

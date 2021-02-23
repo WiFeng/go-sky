@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	skyhttp "github.com/WiFeng/go-sky/sky/http"
-	"github.com/WiFeng/go-sky/sky/log"
+	skyhttp "github.com/WiFeng/go-sky/http"
+	"github.com/WiFeng/go-sky/log"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"

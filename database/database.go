@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	skysql "github.com/WiFeng/go-sky/sky/database/sql"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	skysql "github.com/WiFeng/go-sky/database/sql"
+	"github.com/WiFeng/go-sky/log"
 )
 
 var (

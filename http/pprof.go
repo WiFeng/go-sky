@@ -6,8 +6,8 @@ import (
 
 	_ "net/http/pprof" // pprof
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 )
 
 // InitPProf ...

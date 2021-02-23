@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/WiFeng/go-sky/sky/config"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/config"
+	"github.com/WiFeng/go-sky/log"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

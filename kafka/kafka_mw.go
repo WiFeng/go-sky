@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	kafka "github.com/Shopify/sarama"
-	"github.com/WiFeng/go-sky/sky/log"
+	"github.com/WiFeng/go-sky/log"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"
 )

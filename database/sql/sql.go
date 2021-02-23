@@ -3,7 +3,7 @@ package sql
 import (
 	"database/sql"
 
-	"github.com/WiFeng/go-sky/sky/database/sql/driver"
+	"github.com/WiFeng/go-sky/database/sql/driver"
 )
 
 var (

@@ -11,7 +11,7 @@ go-sky is a Golang micro service framework integrating several very popular pack
 * github.com/Shopify/sarama
 * github.com/prometheus
 
-go-sky includes this subpackages as follows:
+Includes this subpackages as follows:
 
 * github.com/WiFeng/go-sky/config
 * github.com/WiFeng/go-sky/database
@@ -23,6 +23,11 @@ go-sky includes this subpackages as follows:
 * github.com/WiFeng/go-sky/metrics
 * github.com/WiFeng/go-sky/redis
 * github.com/WiFeng/go-sky/trace
+
+## Related projects
+
+1. github.com/WiFeng/go-sky-example
+2. github.com/WiFeng/go-sky-helloworld
 
 ## Features
 

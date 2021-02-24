@@ -50,6 +50,6 @@ Includes this subpackages as follows:
 1. Support redis/sql operation metric
 2. Support more custom config to make some function disabled.
 
-## Feedback
+## Contribution
 
 We need more cute members to make this project more robust. Believe you can!

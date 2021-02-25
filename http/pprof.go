@@ -11,7 +11,7 @@ import (
 )
 
 // InitPProf ...
-func InitPProf(ctx context.Context, cfg config.PProf) {
+func InitPProf(ctx context.Context, serviceName string, cfg config.PProf) {
 	if cfg.Addr == "" {
 		return
 	}

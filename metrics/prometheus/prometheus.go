@@ -16,8 +16,14 @@ var (
 	defaultObjectives = map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001, 0.999: 0.0001, 0.9999: 0.00001}
 )
 
+var (
+	service string
+)
+
 // Init ...
-func Init(ctx context.Context, cfg config.Prometheus) {
+func Init(ctx context.Context, serviceName string, cfg config.Prometheus) {
+	service = serviceName
+
 	if cfg.Addr == "" {
 		return
 	}

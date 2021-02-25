@@ -21,7 +21,7 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, cfs []config.Redis) {
+func Init(ctx context.Context, serviceName string, cfs []config.Redis) {
 	for _, cf := range cfs {
 		redisConfig[cf.Name] = cf
 

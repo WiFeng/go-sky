@@ -8,6 +8,6 @@ import (
 )
 
 // Init ...
-func Init(ctx context.Context, cfg config.Metrics) {
-	prometheus.Init(ctx, cfg.Prometheus)
+func Init(ctx context.Context, serviceName string, cfg config.Metrics) {
+	prometheus.Init(ctx, serviceName, cfg.Prometheus)
 }

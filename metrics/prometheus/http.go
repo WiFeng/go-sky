@@ -11,22 +11,26 @@ var (
 			Name: "http_requests_total",
 			Help: "The total number of http requests",
 		},
-		[]string{"code", "method", "path"},
+		[]string{"service", "code", "method", "path"},
 	)
 
-	httpRequestsDurationHistogram = promauto.NewHistogram(
+	httpRequestsDurationHistogram = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds_histogram",
 			Help:    "A histogram of latencies for requests.",
 			Buckets: promecfg.HTTPRequestsDurationHistogramBuckets,
 		},
+		[]string{"service"},
 	)
 
-	httpRequestsDurationSummary = promauto.NewSummary(prometheus.SummaryOpts{
-		Name:       "http_request_duration_seconds_summary",
-		Help:       "A summary of latencies for requests.",
-		Objectives: promecfg.HTTPRequestsDurationSummaryObjectives,
-	})
+	httpRequestsDurationSummary = promauto.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "http_request_duration_seconds_summary",
+			Help:       "A summary of latencies for requests.",
+			Objectives: promecfg.HTTPRequestsDurationSummaryObjectives,
+		},
+		[]string{"service"},
+	)
 )
 
 // HTTPRequestsTotalCounter ...
@@ -36,9 +40,10 @@ func HTTPRequestsTotalCounter(code int, method string, path string) {
 	}
 
 	labels := prometheus.Labels{
-		"code":   sanitizeCode(code),
-		"method": sanitizeMethod(method),
-		"path":   path,
+		"service": service,
+		"code":    sanitizeCode(code),
+		"method":  sanitizeMethod(method),
+		"path":    path,
 	}
 	httpRequestsTotalCounter.With(labels).Inc()
 }
@@ -49,7 +54,10 @@ func HTTPRequestsDurationHistogram(duration float64) {
 		return
 	}
 
-	httpRequestsDurationHistogram.Observe(duration)
+	labels := prometheus.Labels{
+		"service": service,
+	}
+	httpRequestsDurationHistogram.With(labels).Observe(duration)
 }
 
 // HTTPRequestsDurationSummary ...
@@ -58,5 +66,8 @@ func HTTPRequestsDurationSummary(duration float64) {
 		return
 	}
 
-	httpRequestsDurationSummary.Observe(duration)
+	labels := prometheus.Labels{
+		"service": service,
+	}
+	httpRequestsDurationSummary.With(labels).Observe(duration)
 }

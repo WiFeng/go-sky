@@ -67,7 +67,7 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, cfg config.Log) (logger Logger, err error) {
+func Init(ctx context.Context, serviceName string, cfg config.Log) (logger Logger, err error) {
 	logger, err = NewLogger(cfg)
 	if err != nil {
 		fmt.Println("Init logger error. ", err)

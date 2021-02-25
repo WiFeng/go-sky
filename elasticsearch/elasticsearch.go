@@ -21,7 +21,7 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, cfs []config.Elasticsearch) {
+func Init(ctx context.Context, serviceName string, cfs []config.Elasticsearch) {
 
 	for _, cf := range cfs {
 		esConfig[cf.Name] = cf

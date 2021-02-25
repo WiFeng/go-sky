@@ -20,7 +20,7 @@ var (
 )
 
 // Init ...
-func Init(ctx context.Context, cfs []config.Kafka) {
+func Init(ctx context.Context, serviceName string, cfs []config.Kafka) {
 	for _, cf := range cfs {
 		kafkaConfig[cf.Name] = cf
 

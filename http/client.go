@@ -26,7 +26,7 @@ var (
 )
 
 // InitClient ...
-func InitClient(ctx context.Context, cfs []config.Client) {
+func InitClient(ctx context.Context, serviceName string, cfs []config.Client) {
 	for _, cf := range cfs {
 		clientConfig[cf.Name] = cf
 

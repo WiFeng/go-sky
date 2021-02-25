@@ -59,17 +59,17 @@ func init() {
 	}
 
 	// Initialzie logger and trace
-	log.Init(ctx, globalConfig.Server.Log)
+	log.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Log)
 	trace.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Trace)
 
 	// Initialzie supported components
-	skydb.Init(ctx, globalConfig.Database)
-	skyredis.Init(ctx, globalConfig.Redis)
-	skyes.Init(ctx, globalConfig.Elasticsearch)
-	skykafka.Init(ctx, globalConfig.Kafka)
-	skymetrics.Init(ctx, globalConfig.Server.Metrics)
-	skyhttp.InitClient(ctx, globalConfig.Client)
-	skyhttp.InitPProf(ctx, globalConfig.Server.PProf)
+	skydb.Init(ctx, globalConfig.Server.Name, globalConfig.Database)
+	skyredis.Init(ctx, globalConfig.Server.Name, globalConfig.Redis)
+	skyes.Init(ctx, globalConfig.Server.Name, globalConfig.Elasticsearch)
+	skykafka.Init(ctx, globalConfig.Server.Name, globalConfig.Kafka)
+	skymetrics.Init(ctx, globalConfig.Server.Name, globalConfig.Server.Metrics)
+	skyhttp.InitClient(ctx, globalConfig.Server.Name, globalConfig.Client)
+	skyhttp.InitPProf(ctx, globalConfig.Server.Name, globalConfig.Server.PProf)
 
 	log.Infow(ctx, "Load config successfully", "path", globalConfigFile, "env", globalEnvironment)
 }

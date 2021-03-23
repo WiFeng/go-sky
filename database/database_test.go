@@ -12,7 +12,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var testName = "db1"
+var (
+	testName    = "db1"
+	testService = "testService"
+)
 
 func TestMain(m *testing.M) {
 	dbConf := []config.Database{
@@ -29,11 +32,11 @@ func TestMain(m *testing.M) {
 	logConf := config.Log{
 		Level: "info",
 	}
-	if _, err := log.Init(context.Background(), logConf); err != nil {
+	if _, err := log.Init(context.Background(), testService, logConf); err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	Init(context.Background(), dbConf)
+	Init(context.Background(), testService, dbConf)
 
 	os.Exit(m.Run())
 }

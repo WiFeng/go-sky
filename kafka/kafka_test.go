@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	testName = "testKafka"
+	testName    = "testKafka"
+	testService = "testService"
 )
 
 func TestMain(m *testing.M) {
@@ -26,11 +27,11 @@ func TestMain(m *testing.M) {
 	logConf := config.Log{
 		Level: "info",
 	}
-	if _, err := log.Init(context.Background(), logConf); err != nil {
+	if _, err := log.Init(context.Background(), testService, logConf); err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	Init(context.Background(), kafkaConf)
+	Init(context.Background(), testService, kafkaConf)
 
 	os.Exit(m.Run())
 }

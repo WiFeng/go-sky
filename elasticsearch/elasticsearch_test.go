@@ -10,6 +10,10 @@ import (
 	"github.com/WiFeng/go-sky/log"
 )
 
+var (
+	testService = "testService"
+)
+
 func TestMain(m *testing.M) {
 
 	esConf := []config.Elasticsearch{
@@ -21,11 +25,11 @@ func TestMain(m *testing.M) {
 	logConf := config.Log{
 		Level: "info",
 	}
-	if _, err := log.Init(context.Background(), logConf); err != nil {
+	if _, err := log.Init(context.Background(), testService, logConf); err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	Init(context.Background(), esConf)
+	Init(context.Background(), testService, esConf)
 
 	os.Exit(m.Run())
 }

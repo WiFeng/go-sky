@@ -6,6 +6,11 @@ var (
 
 // AddDeferFunc ...
 func AddDeferFunc(f func()) {
+	// no op
+	if f == nil {
+		return
+	}
+
 	deferFunc = append(deferFunc, f)
 }
 

@@ -120,6 +120,12 @@ func LoadAppConfig(conf interface{}) error {
 	return LoadConfig("app", conf)
 }
 
+// RegisterTask ...
+func RegisterTask(f func(), df func()) {
+	go f()
+	helper.AddDeferFunc(df)
+}
+
 // RunHTTPServer ...
 func RunHTTPServer(handler http.Handler) {
 	// listen

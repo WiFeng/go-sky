@@ -52,13 +52,18 @@ func NewConsumer(ctx context.Context, name string) (kafka.Consumer, error) {
 }
 
 // NewConsumerGroup ...
-func NewConsumerGroup(ctx context.Context, name string, groupID string) (kafka.ConsumerGroup, error) {
+func NewConsumerGroup(ctx context.Context, name string) (kafka.ConsumerGroup, error) {
 	kcl, ok := kafkaMap[name]
 	if !ok {
 		return nil, ErrConfigNotFound
 	}
 
-	return kafka.NewConsumerGroupFromClient(groupID, kcl)
+	kcf, ok := kafkaConfig[name]
+	if !ok {
+		return nil, ErrConfigNotFound
+	}
+
+	return kafka.NewConsumerGroupFromClient(kcf.Consumer.GroupID, kcl)
 }
 
 // NewAsyncProducer ...

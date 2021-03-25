@@ -201,9 +201,9 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 					// respBodyBytes, _ = ioutil.ReadAll(resp.Body)
 					// resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
 
-					body := newWapperBody(req.Body)
-					reqBodyBytes = body.bytes
-					req.Body = body
+					body := newWapperBody(resp.Body)
+					respBodyBytes = body.bytes
+					resp.Body = body.buff
 				}
 			}
 

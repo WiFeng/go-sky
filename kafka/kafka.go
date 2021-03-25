@@ -28,8 +28,8 @@ func Init(ctx context.Context, serviceName string, cfs []config.Kafka) {
 		var err error
 		{
 			kConfig := kafka.NewConfig()
+			kConfig.Version = kafka.V0_10_2_0
 			kcl, err = kafka.NewClient(cf.Addrs, kConfig)
-
 			if err != nil {
 				log.Fatalw(ctx, "kafka.NewClient error", "conf", cf, "err", err)
 				continue

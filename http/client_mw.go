@@ -186,7 +186,6 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 		if req.Body != nil {
 			body := newWapperBody(req.Body)
 			reqBodyBytes = body.bytes
-
 			req.Body = body
 		}
 
@@ -203,7 +202,7 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 
 					body := newWapperBody(resp.Body)
 					respBodyBytes = body.bytes
-					resp.Body = body.buff
+					resp.Body = body
 				}
 			}
 

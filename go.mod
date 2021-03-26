@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.19.0
+	github.com/elastic/go-elasticsearch/v7 v7.12.0
 	github.com/go-kit/kit v0.10.0
 	github.com/go-redis/redis/v8 v8.6.0
 	github.com/go-sql-driver/mysql v1.5.0

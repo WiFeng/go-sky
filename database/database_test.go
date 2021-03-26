@@ -60,3 +60,51 @@ func TestSelect(t *testing.T) {
 		return
 	}
 }
+
+func TestStmtQueryContext(t *testing.T) {
+	var ctx = context.Background()
+	db, err := GetInstance(ctx, testName)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var got string
+	stmt, err := db.PrepareContext(ctx, "SELECT ?")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	stmt.QueryRowContext(ctx, "OK").Scan(&got)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if got != "OK" {
+		t.Errorf("db.QueryRowContext = %s; want OK", got)
+		return
+	}
+}
+
+func TestStmtInsertContext(t *testing.T) {
+	var ctx = context.Background()
+	db, err := GetInstance(ctx, testName)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	stmt, err := db.PrepareContext(ctx, "INSERT INTO te(name, salary) values(?,?)")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	_, err = stmt.ExecContext(ctx, "Lucy", 1200)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}

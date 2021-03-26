@@ -38,7 +38,7 @@ func Init(ctx context.Context, serviceName string, cfs []config.Database) {
 			}
 
 			driverName := skysql.Register(cf.Driver)
-			if db, err = sql.Open(driverName, fmt.Sprintf("%s:%s@/%s?charset=%s", cf.User, cf.Pass, cf.DB, cf.Charset)); err != nil {
+			if db, err = sql.Open(driverName, fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s", cf.User, cf.Pass, cf.Host, cf.Port, cf.DB, cf.Charset)); err != nil {
 				log.Fatalw(ctx, "database open error", "conf", cf, "err", err)
 				continue
 			}
@@ -48,6 +48,8 @@ func Init(ctx context.Context, serviceName string, cfs []config.Database) {
 			}
 		}
 
+		// Dont show passwd in log
+		cf.Pass = "dont show me!"
 		log.Infof(ctx, "Init database [%s] %+v", cf.Name, cf)
 		dbMap[cf.Name] = db
 	}

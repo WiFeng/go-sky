@@ -48,7 +48,7 @@ func ServerLoggingMiddleware(next http.Handler) http.Handler {
 			if r.Body != nil {
 				reqBodyBytes, _ = ioutil.ReadAll(r.Body)
 			}
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
+			r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBodyBytes))
 		}
 
 		iw := &ResponseWriter{
@@ -118,7 +118,7 @@ func ServerMetricsMiddleware(next http.Handler) http.Handler {
 			if r.Body != nil {
 				reqBodyBytes, _ = ioutil.ReadAll(r.Body)
 			}
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(respBodyBytes))
+			r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBodyBytes))
 
 			iw = &ResponseWriter{
 				w,

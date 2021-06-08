@@ -26,9 +26,13 @@ outputPath = ""
 
 [server.metrics.prometheus]
 addr = ":8082"
-# DisableHTTPRequestsTotalCounter = false
-# DisableHTTPRequestsDurationHistogram = false
-# DisableHTTPRequestsDurationSummary = true
+# DisableHTTPServerRequestsTotalCounter = false
+# DisableHTTPServerRequestsDurationHistogram = false
+# DisableHTTPServerRequestsDurationSummary = true
+# DisableHTTPClientRequestsTotalCounter = false
+# DisableHTTPClientRequestsDurationHistogram = false
+# DisableHTTPClientRequestsDurationSummary = true
+# DisableLogTotalCounter = false
 
 
 [[redis]]

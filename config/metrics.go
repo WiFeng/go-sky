@@ -9,10 +9,16 @@ type Metrics struct {
 type Prometheus struct {
 	Addr string
 
-	DisableHTTPRequestsTotalCounter      bool
-	DisableHTTPRequestsDurationHistogram bool
-	DisableHTTPRequestsDurationSummary   bool
+	DisableHTTPServerRequestsTotalCounter      bool
+	DisableHTTPServerRequestsDurationHistogram bool
+	DisableHTTPServerRequestsDurationSummary   bool
+	DisableHTTPClientRequestsTotalCounter      bool
+	DisableHTTPClientRequestsDurationHistogram bool
+	DisableHTTPClientRequestsDurationSummary   bool
+	DisableLogTotalCounter                     bool
 
-	HTTPRequestsDurationHistogramBuckets  []float64
-	HTTPRequestsDurationSummaryObjectives map[float64]float64
+	HTTPServerRequestsDurationHistogramBuckets  []float64
+	HTTPServerRequestsDurationSummaryObjectives map[float64]float64
+	HTTPClientRequestsDurationHistogramBuckets  []float64
+	HTTPClientRequestsDurationSummaryObjectives map[float64]float64
 }

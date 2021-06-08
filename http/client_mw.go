@@ -10,6 +10,7 @@ import (
 
 	"github.com/WiFeng/go-sky/config"
 	"github.com/WiFeng/go-sky/log"
+	skyprome "github.com/WiFeng/go-sky/metrics/prometheus"
 	kitopentracing "github.com/go-kit/kit/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
 	opentracingext "github.com/opentracing/opentracing-go/ext"
@@ -227,6 +228,29 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 
 			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
 				"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
+		}(time.Now())
+
+		resp, err = next.RoundTrip(req)
+		return
+	})
+}
+
+// RoundTripperTracingMiddleware ...
+func RoundTripperMetricsMiddleware(next http.RoundTripper) http.RoundTripper {
+	return RoundTripperFunc(func(req *http.Request) (resp *http.Response, err error) {
+
+		var peer string
+		val := req.Context().Value(clientContext)
+		if contextVal, ok := val.(clientContextVal); ok {
+			peer = contextVal.peerName
+		}
+
+		defer func(begin time.Time) {
+			duration := float64(time.Since(begin).Microseconds()) / 1000000
+
+			skyprome.HTTPClientRequestsTotalCounter(peer, resp.StatusCode, req.Method, req.URL.Path)
+			skyprome.HTTPClientRequestsDurationHistogram(peer, resp.StatusCode, req.Method, req.URL.Path, duration)
+			skyprome.HTTPClientRequestsDurationSummary(peer, resp.StatusCode, req.Method, req.URL.Path, duration)
 		}(time.Now())
 
 		resp, err = next.RoundTrip(req)

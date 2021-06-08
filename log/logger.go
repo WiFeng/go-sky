@@ -7,6 +7,7 @@ import (
 
 	"github.com/WiFeng/go-sky/config"
 	"github.com/WiFeng/go-sky/helper"
+	skyprome "github.com/WiFeng/go-sky/metrics/prometheus"
 	"github.com/opentracing/opentracing-go"
 	jaegerclient "github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
@@ -201,126 +202,147 @@ func BuildLogger(ctx context.Context) context.Context {
 func Info(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Info(args...)
+	skyprome.LogCounter("INFO")
 }
 
 // Infof ...
 func Infof(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Infof(template, args...)
+	skyprome.LogCounter("INFO")
 }
 
 // Infow ...
 func Infow(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Infow(msg, keysAndValues...)
+	skyprome.LogCounter("INFO")
 }
 
 // Debug ...
 func Debug(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Debug(args...)
+	skyprome.LogCounter("DEBUG")
 }
 
 // Debugf ...
 func Debugf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Debugf(template, args...)
+	skyprome.LogCounter("DEBUG")
 }
 
 // Debugw ...
 func Debugw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Debugw(msg, keysAndValues...)
+	skyprome.LogCounter("DEBUG")
 }
 
 // Warn ...
 func Warn(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Warn(args...)
+	skyprome.LogCounter("WARN")
 }
 
 // Warnf ...
 func Warnf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Warnf(template, args...)
+	skyprome.LogCounter("WARN")
 }
 
 // Warnw ...
 func Warnw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Warnw(msg, keysAndValues...)
+	skyprome.LogCounter("WARN")
 }
 
 // Error ...
 func Error(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Error(args...)
+	skyprome.LogCounter("ERROR")
 }
 
 // Errorf ...
 func Errorf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Errorf(template, args...)
+	skyprome.LogCounter("ERROR")
 }
 
 // Errorw ...
 func Errorw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Errorw(msg, keysAndValues...)
+	skyprome.LogCounter("ERROR")
 }
 
 // DPanic ...
 func DPanic(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.DPanic(args...)
+	skyprome.LogCounter("PANIC")
 }
 
 // DPanicf ...
 func DPanicf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.DPanicf(template, args...)
+	skyprome.LogCounter("PANIC")
 }
 
 // DPanicw ...
 func DPanicw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.DPanicw(msg, keysAndValues...)
+	skyprome.LogCounter("PANIC")
 }
 
 // Panic ...
 func Panic(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Panic(args...)
+	skyprome.LogCounter("PANIC")
 }
 
 // Panicf ...
 func Panicf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Panicf(template, args...)
+	skyprome.LogCounter("PANIC")
 }
 
 // Panicw ...
 func Panicw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Panicw(msg, keysAndValues...)
+	skyprome.LogCounter("PANIC")
 }
 
 // Fatal ...
 func Fatal(ctx context.Context, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Fatal(args...)
+	skyprome.LogCounter("FATAL")
 }
 
 // Fatalf ...
 func Fatalf(ctx context.Context, template string, args ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Fatalf(template, args...)
+	skyprome.LogCounter("FATAL")
 }
 
 // Fatalw ...
 func Fatalw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 	logg := LoggerFromContext(ctx)
 	logg.Fatalw(msg, keysAndValues...)
+	skyprome.LogCounter("FATAL")
 }
 
 // Sync ...

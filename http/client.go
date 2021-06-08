@@ -15,6 +15,10 @@ import (
 	"github.com/WiFeng/go-sky/log"
 )
 
+const (
+	clientContext clientContextKey = 0
+)
+
 var (
 	clientMap    = map[string]*http.Client{}
 	clientConfig = map[string]config.Client{}
@@ -25,12 +29,18 @@ var (
 	ErrConfigNotFound = errors.New("client config is not found")
 )
 
+type clientContextKey int
+type clientContextVal struct {
+	peerName string
+}
+
 // InitClient ...
-func InitClient(ctx context.Context, serviceName string, cfs []config.Client) {
+func InitClient(ctx context.Context, peerName string, cfs []config.Client) {
 	for _, cf := range cfs {
 		clientConfig[cf.Name] = cf
 
 		tr := NewRoundTripperFromConfig(cf.Transport)
+		tr.Use(RoundTripperMetricsMiddleware)
 		tr.Use(RoundTripperTracingMiddleware)
 		tr.Use(RoundTripperLoggingMiddleware)
 
@@ -52,31 +62,32 @@ func InitClient(ctx context.Context, serviceName string, cfs []config.Client) {
 // Client ...
 type Client struct {
 	*kithttp.Client
+	peerName string
 }
 
 // NewClient ...
 func NewClient(
 	ctx context.Context,
-	serviceName string,
+	peerName string,
 	method string,
 	uri string,
 	enc kithttp.EncodeRequestFunc,
 	dec kithttp.DecodeResponseFunc,
 	opt ...kithttp.ClientOption) (*Client, error) {
 
-	cl, ok := clientMap[serviceName]
+	cl, ok := clientMap[peerName]
 	if !ok {
 		err := ErrConfigNotFound
-		log.Errorw(ctx, "http.NewClient, serviceName is not in clientMap map",
-			"service_name", serviceName, "method", method, "uri", uri, "err", err)
+		log.Errorw(ctx, "http.NewClient, peerName is not in clientMap map",
+			"service_name", peerName, "method", method, "uri", uri, "err", err)
 		return nil, err
 	}
 
-	clf, ok := clientConfig[serviceName]
+	clf, ok := clientConfig[peerName]
 	if !ok {
 		err := ErrConfigNotFound
-		log.Errorw(ctx, "http.NewClient, serviceName is not in clientConfig map",
-			"service_name", serviceName, "method", method, "uri", uri, "err", err)
+		log.Errorw(ctx, "http.NewClient, peerName is not in clientConfig map",
+			"service_name", peerName, "method", method, "uri", uri, "err", err)
 		return nil, err
 	}
 
@@ -96,7 +107,7 @@ func NewClient(
 	targetURL, err := url.Parse(uri)
 	if err != nil {
 		log.Errorw(ctx, "http.NewClient, url.Parse error",
-			"service_name", serviceName, "method", method, "uri", uri, "err", err)
+			"service_name", peerName, "method", method, "uri", uri, "err", err)
 		return nil, err
 	}
 
@@ -106,6 +117,7 @@ func NewClient(
 	kc := kithttp.NewClient(method, targetURL, enc, dec, options...)
 	c := &Client{
 		kc,
+		peerName,
 	}
 
 	return c, nil
@@ -113,6 +125,12 @@ func NewClient(
 
 // Endpoint ...
 func (c Client) Endpoint() kitendpoint.Endpoint {
+	// e := c.Client.Endpoint()
+	// return e
 	e := c.Client.Endpoint()
-	return e
+	f := func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		ctx = context.WithValue(ctx, clientContext, clientContextVal{c.peerName})
+		return e(ctx, request)
+	}
+	return f
 }

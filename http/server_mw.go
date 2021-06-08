@@ -131,9 +131,9 @@ func ServerMetricsMiddleware(next http.Handler) http.Handler {
 		defer func(begin time.Time) {
 			duration := float64(time.Since(begin).Microseconds()) / 1000000
 
-			skyprome.HTTPRequestsTotalCounter(iw.statusCode, r.Method, r.URL.Path)
-			skyprome.HTTPRequestsDurationHistogram(duration)
-			skyprome.HTTPRequestsDurationSummary(duration)
+			skyprome.HTTPServerRequestsTotalCounter(iw.statusCode, r.Method, r.URL.Path)
+			skyprome.HTTPServerRequestsDurationHistogram(iw.statusCode, r.Method, r.URL.Path, duration)
+			skyprome.HTTPServerRequestsDurationSummary(iw.statusCode, r.Method, r.URL.Path, duration)
 		}(time.Now())
 
 		next.ServeHTTP(iw, r)

@@ -2,11 +2,13 @@ package sky
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"text/tabwriter"
+	"time"
 
 	"github.com/WiFeng/go-sky/config"
 	"github.com/WiFeng/go-sky/helper"
@@ -120,9 +122,31 @@ func LoadAppConfig(conf interface{}) error {
 	return LoadConfig("app", conf)
 }
 
+func safelyDo(f func()) (err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			log.Errorw(context.Background(), "panic error", "err", panicErr)
+			err = errors.New("panic error")
+		}
+	}()
+	f()
+	return
+}
+
 // RegisterTask ...
-func RegisterTask(f func(), df func()) {
-	go f()
+func RegisterTask(f func(), df func(), sync bool) {
+	if sync {
+		if safelyDo(f) != nil {
+			log.Panicf(context.Background(), "panic error")
+		}
+	} else {
+		for {
+			go safelyDo(f)
+			time.Sleep(60 * time.Second)
+		}
+
+	}
+
 	helper.AddDeferFunc(df)
 }
 

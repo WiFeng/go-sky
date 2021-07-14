@@ -47,6 +47,7 @@ func initPrometheus(ctx context.Context, serviceName string, cfg config.Promethe
 	skyprome.SetPromeCfg(cfg)
 	skyprome.SetPromeService(serviceName)
 
+	skyprome.UpInit()
 	skyprome.LogInit()
 	skyprome.HttpServerInit()
 	skyprome.HttpClientInit()

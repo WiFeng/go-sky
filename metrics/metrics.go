@@ -23,11 +23,6 @@ func initPrometheus(ctx context.Context, serviceName string, cfg config.Promethe
 		return
 	}
 
-	go func() {
-		log.Infof(ctx, "Start HTTP Prometheus metrics. http://%s", cfg.Addr)
-		log.Fatal(ctx, http.ListenAndServe(cfg.Addr, promhttp.Handler()))
-	}()
-
 	if len(cfg.HTTPServerRequestsDurationHistogramBuckets) < 1 {
 		cfg.HTTPServerRequestsDurationHistogramBuckets = skyprome.DefaultBuckets
 	}
@@ -51,4 +46,10 @@ func initPrometheus(ctx context.Context, serviceName string, cfg config.Promethe
 	skyprome.LogInit()
 	skyprome.HttpServerInit()
 	skyprome.HttpClientInit()
+
+	go func() {
+		log.Infof(ctx, "Start HTTP Prometheus metrics. http://%s", cfg.Addr)
+		log.Fatal(ctx, http.ListenAndServe(cfg.Addr, promhttp.Handler()))
+	}()
+
 }

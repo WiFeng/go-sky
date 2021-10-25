@@ -31,7 +31,6 @@ func (r loggingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmd
 // AfterProcessPipeline ...
 func (r loggingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	return nil
-
 }
 
 // tracingHook ...
@@ -72,11 +71,33 @@ func (r tracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 
 // BeforeProcessPipeline ...
 func (r tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+	var parentSpan opentracing.Span
+	var childSpan opentracing.Span
+
+	if parentSpan = opentracing.SpanFromContext(ctx); parentSpan != nil {
+		var opts []opentracing.StartSpanOption
+		opts = append(opts, opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: string(opentracingext.Component), Value: "redis"},
+			opentracingext.SpanKindRPCClient)
+		for i, cmd := range cmds {
+			opts = append(opts, opentracing.Tag{Key: fmt.Sprintf("cmd.%d.name", i), Value: cmd.Name()})
+			opts = append(opts, opentracing.Tag{Key: fmt.Sprintf("cmd.%d.string", i), Value: cmd.String()})
+		}
+
+		childSpan = parentSpan.Tracer().StartSpan(
+			"redis.pipline",
+			opts...,
+		)
+		ctx = opentracing.ContextWithSpan(ctx, childSpan)
+	}
+
 	return ctx, nil
 }
 
 // AfterProcessPipeline ...
 func (r tracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+	if childSpan := opentracing.SpanFromContext(ctx); childSpan != nil {
+		childSpan.Finish()
+	}
 	return nil
-
 }

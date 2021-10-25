@@ -36,9 +36,15 @@ func Init(ctx context.Context, serviceName string, cfs []config.Database) {
 			if cf.Charset == "" {
 				cf.Charset = "utf8mb4"
 			}
+			if cf.InterpolateParams == "" {
+				cf.InterpolateParams = "true"
+			}
+			if cf.DataSource == "" {
+				cf.DataSource = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&interpolateParams=%s", cf.User, cf.Pass, cf.Host, cf.Port, cf.DB, cf.Charset, cf.InterpolateParams)
+			}
 
 			driverName := skysql.Register(cf.Driver)
-			if db, err = sql.Open(driverName, fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s", cf.User, cf.Pass, cf.Host, cf.Port, cf.DB, cf.Charset)); err != nil {
+			if db, err = sql.Open(driverName, cf.DataSource); err != nil {
 				log.Fatalw(ctx, "database open error", "conf", cf, "err", err)
 				continue
 			}

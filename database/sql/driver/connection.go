@@ -135,6 +135,7 @@ func (c *conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 			"sql.QueryContext",
 			opentracing.ChildOf(parentSpan.Context()),
 			opentracing.Tag{Key: "db.query", Value: query},
+			opentracing.Tag{Key: "db.args", Value: args},
 			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
 			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
 			opentracingext.SpanKindRPCClient,
@@ -173,6 +174,7 @@ func (c *conn) ExecContext(ctx context.Context, query string, args []driver.Name
 			"sql.ExecContext",
 			opentracing.ChildOf(parentSpan.Context()),
 			opentracing.Tag{Key: "db.query", Value: query},
+			opentracing.Tag{Key: "db.args", Value: args},
 			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
 			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
 			opentracingext.SpanKindRPCClient,
@@ -275,6 +277,7 @@ func (s *stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows
 		childSpan = parentSpan.Tracer().StartSpan(
 			"sql.stmt.QueryContext",
 			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: "db.args", Value: args},
 			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
 			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
 			opentracingext.SpanKindRPCClient,
@@ -312,6 +315,7 @@ func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (resul
 		childSpan = parentSpan.Tracer().StartSpan(
 			"sql.stmt.ExecContext",
 			opentracing.ChildOf(parentSpan.Context()),
+			opentracing.Tag{Key: "db.args", Value: args},
 			opentracing.Tag{Key: string(opentracingext.DBType), Value: "sql"},
 			opentracing.Tag{Key: string(opentracingext.Component), Value: "database"},
 			opentracingext.SpanKindRPCClient,

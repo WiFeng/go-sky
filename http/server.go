@@ -43,7 +43,7 @@ func NewServer(
 		options = append(options, opt...)
 	}
 
-	e = PanicMiddleware()(e)
+	e = EndpointPanicMiddleware()(e)
 
 	ks := kithttp.NewServer(
 		e,

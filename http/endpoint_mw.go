@@ -13,8 +13,8 @@ var (
 	ErrPanic = errors.New("panic error")
 )
 
-// PanicMiddleware ...
-func PanicMiddleware() kitendpoint.Middleware {
+// EndpointPanicMiddleware ...
+func EndpointPanicMiddleware() kitendpoint.Middleware {
 	return func(next kitendpoint.Endpoint) kitendpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			defer func() {

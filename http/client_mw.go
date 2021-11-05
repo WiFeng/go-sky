@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -145,20 +146,26 @@ func RoundTripperTracingMiddleware(next http.RoundTripper) http.RoundTripper {
 		var childSpan opentracing.Span
 
 		defer func() {
+			var respStatus int
+
 			if childSpan == nil {
 				return
 			}
-			if err != nil {
-				opentracingext.Error.Set(childSpan, true)
-				childSpan.SetTag("http.error", err.Error())
-				childSpan.Finish()
-				return
-			}
-			if resp.StatusCode >= 400 {
-				opentracingext.Error.Set(childSpan, true)
+
+			if err == context.Canceled {
+				respStatus = 499
 			}
 
-			opentracingext.HTTPStatusCode.Set(childSpan, uint16(resp.StatusCode))
+			if resp != nil {
+				respStatus = resp.StatusCode
+			}
+
+			if respStatus < 100 || respStatus >= 500 {
+				opentracingext.Error.Set(childSpan, true)
+				childSpan.SetTag("http.error", err.Error())
+			}
+
+			opentracingext.HTTPStatusCode.Set(childSpan, uint16(respStatus))
 			childSpan.Finish()
 		}()
 
@@ -195,6 +202,10 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 			var respBody string
 			var respStatus int
 
+			if err == context.Canceled {
+				respStatus = 499
+			}
+
 			if resp != nil {
 				respStatus = resp.StatusCode
 				if resp.Body != nil {
@@ -216,18 +227,14 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 				respBody = respBody[0:500]
 			}
 
-			if err != nil || respStatus >= 500 {
+			if respStatus >= 500 || respStatus < 100 {
 				log.Errorw(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
 					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000), "err", err)
-				return
-			} else if respStatus >= 400 {
-				log.Warnw(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
+			} else {
+				log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
 					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
-				return
 			}
 
-			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
-				"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 		}(time.Now())
 
 		resp, err = next.RoundTrip(req)
@@ -246,11 +253,21 @@ func RoundTripperMetricsMiddleware(next http.RoundTripper) http.RoundTripper {
 		}
 
 		defer func(begin time.Time) {
+			var respStatus int
+
+			if err == context.Canceled {
+				respStatus = 499
+			}
+
+			if resp != nil {
+				respStatus = resp.StatusCode
+			}
+
 			duration := float64(time.Since(begin).Microseconds()) / 1000000
 
-			skyprome.HTTPClientRequestsTotalCounter(peer, resp.StatusCode, req.Method, req.URL.Path)
-			skyprome.HTTPClientRequestsDurationHistogram(peer, resp.StatusCode, req.Method, req.URL.Path, duration)
-			skyprome.HTTPClientRequestsDurationSummary(peer, resp.StatusCode, req.Method, req.URL.Path, duration)
+			skyprome.HTTPClientRequestsTotalCounter(peer, respStatus, req.Method, req.URL.Path)
+			skyprome.HTTPClientRequestsDurationHistogram(peer, respStatus, req.Method, req.URL.Path, duration)
+			skyprome.HTTPClientRequestsDurationSummary(peer, respStatus, req.Method, req.URL.Path, duration)
 		}(time.Now())
 
 		resp, err = next.RoundTrip(req)

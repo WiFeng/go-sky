@@ -263,6 +263,11 @@ func Warnw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 
 // Error ...
 func Error(ctx context.Context, args ...interface{}) {
+	if ctx.Err() == context.Canceled {
+		Warn(ctx, args...)
+		return
+	}
+
 	logg := LoggerFromContext(ctx)
 	logg.Error(args...)
 	skyprome.LogCounter("ERROR")
@@ -270,6 +275,11 @@ func Error(ctx context.Context, args ...interface{}) {
 
 // Errorf ...
 func Errorf(ctx context.Context, template string, args ...interface{}) {
+	if ctx.Err() == context.Canceled {
+		Warnf(ctx, template, args...)
+		return
+	}
+
 	logg := LoggerFromContext(ctx)
 	logg.Errorf(template, args...)
 	skyprome.LogCounter("ERROR")
@@ -277,6 +287,11 @@ func Errorf(ctx context.Context, template string, args ...interface{}) {
 
 // Errorw ...
 func Errorw(ctx context.Context, msg string, keysAndValues ...interface{}) {
+	if ctx.Err() == context.Canceled {
+		Warnw(ctx, msg, keysAndValues...)
+		return
+	}
+
 	logg := LoggerFromContext(ctx)
 	logg.Errorw(msg, keysAndValues...)
 	skyprome.LogCounter("ERROR")

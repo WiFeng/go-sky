@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"text/tabwriter"
-	"time"
 
 	"github.com/WiFeng/go-sky/config"
 	"github.com/WiFeng/go-sky/helper"
@@ -140,11 +139,7 @@ func RegisterTask(f func(), df func(), sync bool) {
 			log.Panicf(context.Background(), "panic error")
 		}
 	} else {
-		for {
-			go safelyDo(f)
-			time.Sleep(60 * time.Second)
-		}
-
+		go safelyDo(f)
 	}
 
 	helper.AddDeferFunc(df)

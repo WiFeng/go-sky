@@ -45,6 +45,10 @@ func HTTPServerRequestsTotalCounter(code int, method string, path string) {
 		return
 	}
 
+	if httpServerRequestsTotalCounter == nil {
+		return
+	}
+
 	labels := prometheus.Labels{
 		"service": service,
 		"code":    sanitizeCode(code),
@@ -60,6 +64,10 @@ func HTTPServerRequestsDurationHistogram(code int, method string, path string, d
 		return
 	}
 
+	if httpServerRequestsDurationHistogram == nil {
+		return
+	}
+
 	labels := prometheus.Labels{
 		"service": service,
 		"code":    sanitizeCode(code),
@@ -72,6 +80,10 @@ func HTTPServerRequestsDurationHistogram(code int, method string, path string, d
 // HTTPServerRequestsDurationSummary ...
 func HTTPServerRequestsDurationSummary(code int, method string, path string, duration float64) {
 	if promecfg.DisableHTTPServerRequestsDurationSummary {
+		return
+	}
+
+	if httpServerRequestsDurationSummary == nil {
 		return
 	}
 

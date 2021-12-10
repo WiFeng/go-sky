@@ -12,7 +12,7 @@ var (
 func LogInit() {
 	logCounter = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "srv_log_total",
+			Name: "svc_log_total",
 			Help: "The total number of server log",
 		},
 		[]string{"service", "level"},

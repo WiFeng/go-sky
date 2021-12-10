@@ -45,6 +45,10 @@ func HTTPClientRequestsTotalCounter(peer string, code int, method string, path s
 		return
 	}
 
+	if httpClientRequestsTotalCounter == nil {
+		return
+	}
+
 	labels := prometheus.Labels{
 		"service": service,
 		"peer":    peer,
@@ -61,6 +65,10 @@ func HTTPClientRequestsDurationHistogram(peer string, code int, method string, p
 		return
 	}
 
+	if httpClientRequestsDurationHistogram == nil {
+		return
+	}
+
 	labels := prometheus.Labels{
 		"service": service,
 		"peer":    peer,
@@ -74,6 +82,10 @@ func HTTPClientRequestsDurationHistogram(peer string, code int, method string, p
 // HTTPClientRequestsDurationSummary ...
 func HTTPClientRequestsDurationSummary(peer string, code int, method string, path string, duration float64) {
 	if promecfg.DisableHTTPClientRequestsDurationSummary {
+		return
+	}
+
+	if httpClientRequestsDurationSummary == nil {
 		return
 	}
 

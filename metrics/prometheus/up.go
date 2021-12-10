@@ -8,7 +8,7 @@ import (
 func UpInit() {
 	upCounter := promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "srv_up",
+			Name: "svc_up",
 			Help: "The server up state",
 		},
 		[]string{"service"},

@@ -263,36 +263,48 @@ func Warnw(ctx context.Context, msg string, keysAndValues ...interface{}) {
 
 // Error ...
 func Error(ctx context.Context, args ...interface{}) {
+	logg := LoggerFromContext(ctx)
+
 	if ctx.Err() == context.Canceled {
-		Warn(ctx, args...)
+		// keep the deepth of call stack is equal.
+		// Warn(ctx, args...)
+		logg.Warn(args...)
+		skyprome.LogCounter("WARN")
 		return
 	}
 
-	logg := LoggerFromContext(ctx)
 	logg.Error(args...)
 	skyprome.LogCounter("ERROR")
 }
 
 // Errorf ...
 func Errorf(ctx context.Context, template string, args ...interface{}) {
+	logg := LoggerFromContext(ctx)
+
 	if ctx.Err() == context.Canceled {
-		Warnf(ctx, template, args...)
+		// keep the deepth of call stack is equal.
+		// Warnf(ctx, template, args...)
+		logg.Warnf(template, args...)
+		skyprome.LogCounter("WARN")
 		return
 	}
 
-	logg := LoggerFromContext(ctx)
 	logg.Errorf(template, args...)
 	skyprome.LogCounter("ERROR")
 }
 
 // Errorw ...
 func Errorw(ctx context.Context, msg string, keysAndValues ...interface{}) {
+	logg := LoggerFromContext(ctx)
+
 	if ctx.Err() == context.Canceled {
-		Warnw(ctx, msg, keysAndValues...)
+		// keep the deepth of call stack is equal.
+		// Warnw(ctx, msg, keysAndValues...)
+		logg.Warnw(msg, keysAndValues...)
+		skyprome.LogCounter("WARN")
 		return
 	}
 
-	logg := LoggerFromContext(ctx)
 	logg.Errorw(msg, keysAndValues...)
 	skyprome.LogCounter("ERROR")
 }

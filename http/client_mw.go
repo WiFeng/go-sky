@@ -227,13 +227,8 @@ func RoundTripperLoggingMiddleware(next http.RoundTripper) http.RoundTripper {
 				respBody = respBody[0:500]
 			}
 
-			if respStatus >= 500 || respStatus < 100 {
-				log.Errorw(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
-					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000), "err", err)
-			} else {
-				log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
-					"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
-			}
+			log.Infow(ctx, fmt.Sprintf("%s %s?%s", req.Method, req.URL.Path, req.URL.RawQuery), log.TypeKey, log.TypeValRPC, "host", req.Host, "req", reqBody,
+				"resp", respBody, "status", respStatus, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000), "err", err)
 
 		}(time.Now())
 

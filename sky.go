@@ -121,10 +121,10 @@ func LoadAppConfig(conf interface{}) error {
 	return LoadConfig("app", conf)
 }
 
-func safelyDo(f func()) (err error) {
+func SafelyDo(ctx context.Context, f func()) (err error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			log.Errorw(context.Background(), "panic error", "err", panicErr)
+			log.Errorw(ctx, "panic error", "err", panicErr)
 			err = errors.New("panic error")
 		}
 	}()
@@ -134,12 +134,13 @@ func safelyDo(f func()) (err error) {
 
 // RegisterTask ...
 func RegisterTask(f func(), df func(), sync bool) {
+	ctx := context.Background()
 	if sync {
-		if safelyDo(f) != nil {
+		if SafelyDo(ctx, f) != nil {
 			log.Panicf(context.Background(), "panic error")
 		}
 	} else {
-		go safelyDo(f)
+		go SafelyDo(ctx, f)
 	}
 
 	helper.AddDeferFunc(df)

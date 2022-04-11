@@ -79,10 +79,16 @@ func (r tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmd
 		opts = append(opts, opentracing.ChildOf(parentSpan.Context()),
 			opentracing.Tag{Key: string(opentracingext.Component), Value: "redis"},
 			opentracingext.SpanKindRPCClient)
-		for i, cmd := range cmds {
+
+		_cmds := cmds
+		if len(cmds) > 100 {
+			_cmds = cmds[:100]
+		}
+		for i, cmd := range _cmds {
 			opts = append(opts, opentracing.Tag{Key: fmt.Sprintf("cmd.%d.name", i), Value: cmd.Name()})
 			opts = append(opts, opentracing.Tag{Key: fmt.Sprintf("cmd.%d.string", i), Value: cmd.String()})
 		}
+		opts = append(opts, opentracing.Tag{Key: "cmd.length", Value: len(cmds)})
 
 		childSpan = parentSpan.Tracer().StartSpan(
 			"redis.pipline",

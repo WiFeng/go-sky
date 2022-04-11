@@ -76,13 +76,8 @@ func ServerLoggingMiddleware(next http.Handler) http.Handler {
 				opentracingext.HTTPStatusCode.Set(span, uint16(iw.statusCode))
 			}
 
-			if iw.statusCode >= 500 {
-				log.Errorw(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
-					"resp", respBody, "status", iw.statusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
-			} else {
-				log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
-					"resp", respBody, "status", iw.statusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
-			}
+			log.Infow(ctx, fmt.Sprintf("%s %s", r.Method, r.RequestURI), log.TypeKey, log.TypeValAccess, "host", r.Host, "req", reqBody,
+				"resp", respBody, "status", iw.statusCode, "request_time", fmt.Sprintf("%.3f", float32(time.Since(begin).Microseconds())/1000))
 
 		}(time.Now())
 
